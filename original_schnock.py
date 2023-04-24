@@ -94,9 +94,7 @@ class SchnockExperiment(BaseExperiment):
 
 
 #%%
-import numpy as np
-
-arr=np.array((2,2,1))
-
-3 - arr.argmax() - arr.argmin()
+if __name__=="__main__":
+    experiment=SchnockExperiment()
+    # TODO: Implement launching from command line
 # %%

@@ -1,12 +1,7 @@
 #%%
 
 import numpy as np
-import matplotlib.pyplot as plt
-#from array2gif import write_gif
-import cv2
-import os
-from PIL import Image
-from math import sin, cos, tan, pi
+from math import sin, cos, pi
 import logging
 from base_experiment import BaseExperiment
 from original_schnock import SchnockExperiment
@@ -15,10 +10,7 @@ from original_schnock import SchnockExperiment
 folder="Computer-Vision-with-Python\DATA"
 file_name1="dog_backpack.png"
 class GradientExperiment(BaseExperiment):
-    def __init__(self, 
-                #  source_folder_path: str="Computer-Vision-with-Python\DATA", 
-                #  source_image_path: str="dog_backpack.png"
-        ):
+    def __init__(self):
         try:
             self.source_diff={}
             self.source_image=None
@@ -36,16 +28,7 @@ class GradientExperiment(BaseExperiment):
             self.initialize_output_start_images_dict()
         except Exception as error:
             logging.error("Failed initialization with error: {0}".format(error))
-            raise error
-        
-        # # self.load_source_image(
-        # #     source_folder_path=source_folder_path,
-        # #     source_image_path=source_image_path
-        # # )
-
-        # self.get_difference_matrices()
-
-    
+            raise error   
     
     def pass_output_start_image(self, output_start_image):
         self.new_matrix = output_start_image
@@ -59,9 +42,6 @@ class GradientExperiment(BaseExperiment):
             self.padded_source_image[n]=np.pad(self.source_image,pad_width=((n,n),(n,n),(0,0)),mode="edge")
             self.source_diff["x_{0}".format(n)]=np.diff(self.padded_source_image[n][n:-n,:,:],n=n, axis=1)
             self.source_diff["y_{0}".format(n)]=np.diff(self.padded_source_image[n][:,n:-n,:],n=n, axis=0)
-        # self.source_diff_x=np.diff(self.padded_source_image[n:-n,:,:],n=n, axis=1)
-        # self.source_diff_y=np.diff(self.padded_source_image[:,n:-n,:],n=n, axis=0)
-        pass
 
     def compute_from_video(self, source_image):
         self.pass_source_image(source_image=source_image)
@@ -92,8 +72,6 @@ class GradientExperiment(BaseExperiment):
         self.difference_matrix=np.stack(tuple(matrix_stack))
         self.merge_mode_functions_dict[self.merge_mode]()
         self.current_iteration_n +=1
-        pass
-
     
     def initialize_dynamic_multiplier_dict(self):
         self.dynamic_multpiplier_functions_dict={
@@ -164,7 +142,6 @@ class GradientExperiment(BaseExperiment):
             self.new_matrix=self.source_image
         else:
             self.video_merge_mode_functions_dict[self.video_merge_mode]()
-            #self.new_matrix = np.max(np.stack((self.new_matrix, self.source_image)), axis=0).astype(np.uint8)
         self.current_iteration_n = 0
         self.alternate_counter=0
 
@@ -282,46 +259,4 @@ class GradientExperiment(BaseExperiment):
 #%%
 if __name__=="__main__":
     experiment=GradientExperiment()
-#DEPRECATED
-    # experiment.create_new_image_from_old(
-    #     merge_mode="mean",
-    #     n_iterations=500,
-    #     multiplier=3,
-    #     multiplier_mode="exponential_reduction",
-    #     alternate_every_n=10
-    # )
-
-#Image.fromarray(experiment.new_matrix).save("latest_experiment.jpg")
-
-#%%
-
-# imgs = [Image.fromarray(img) for img in img_list]
-
-# imgs[0].save("alternate.gif", save_all=True, append_images=imgs[1:200], duration=100, loop=0)
-
-# #%%
-# import cv2
-# size = img_list[0].shape[1], img_list[0].shape[2]
-
-# layers,width,height=img_list[0].shape
-
-# #video=cv2.VideoWriter('video.avi',0,1,(width,height))
-# fps=15
-# frame_nr = len(img_list)
-# duration=frame_nr, fps
-# out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (size[0], size[1]))
-# for i in range(frame_nr):
-#     #print(img.shape)
-#     out.write(img_list[i])
-# out.release()
-# #%%
-# maxim = new_image
-# #%%
-# minim=new_image
-
-# #%%
-# mean=new_image
-
-# #%%
-# random=new_image
-# # %%
+    # TODO: Implement launching from command line

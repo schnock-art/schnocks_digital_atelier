@@ -48,11 +48,11 @@ class UI(QMainWindow):
             self.webcam_delay=1
             self.source_original_image_data=None
             self.config={}
-            #self.gradient_experiment = GradientExperiment()
             self.define_widgets()
             self.connect_buttons()
             self.init_values()
             self.show()
+            
         except Exception as error:
             logging.error("Failed initialization with error: {0}".format(error))
             raise error

@@ -11,6 +11,13 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "Python: schnock_atelier_ui.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/schnock_atelier_ui.py",
+            "args" : []
+        },
     ]
 }
