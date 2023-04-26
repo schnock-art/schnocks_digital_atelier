@@ -1,6 +1,9 @@
-# schnocks_digital_atelier
+# Schnocks Digital Atelier
 
-Schnocks Digital Atelier to play around with Photos
+Schnocks Digital Atelier to play around with Photos.
+
+## Warning!
+When using the webcam, some configurations can produce rapidly changing and flashy images, please avoid using the camera input if you are photosensitive, this could potetntially trigger epilepsy.
 
 ## Create Environment
 #### In terminal
