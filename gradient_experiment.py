@@ -7,8 +7,7 @@ from base_experiment import BaseExperiment
 from original_schnock import SchnockExperiment
 
 
-folder="Computer-Vision-with-Python\DATA"
-file_name1="dog_backpack.png"
+
 class GradientExperiment(BaseExperiment):
     def __init__(self):
         try:
@@ -243,7 +242,7 @@ class GradientExperiment(BaseExperiment):
         self.dynamic_multiplier = self.multiplier_amplitude
         
     def dynamic_multiplier_linear_reduction(self):
-        self.dynamic_multiplier=self.multiplier_amplitude*(self.n_iterations-self.current_iteration_n)/self.n_iterations
+        self.dynamic_multiplier=self.multiplier_amplitude*(1-1/self.current_iteration_n)
 
     def dynamic_multiplier_exponential_reduction(self):
         self.dynamic_multiplier = 1+int(self.multiplier_amplitude*np.exp(-self.current_iteration_n))
