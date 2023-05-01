@@ -13,10 +13,10 @@ open-designer:
 	qt6-tools designer
 
 create-exe:
-	pyinstaller  src/schnock_atelier.py --add-data="src/main_ui.ui;."
+	pyinstaller  src/schnock_atelier.py --add-data="src/main_ui.ui;." --noconfirm
 
 execute-spec:
-	pyinstaller schnock_ateliers.spec
+	pyinstaller schnock_atelier.spec --noconfirm
 
 auto-format:
 	black src/

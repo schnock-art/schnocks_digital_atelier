@@ -83,7 +83,7 @@
  [],
  False,
  False,
- 1682926477,
+ 1682942920,
  [('run.exe',
    'C:\\Users\\jange\\anaconda3\\envs\\schnock\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')])
