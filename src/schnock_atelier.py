@@ -1,4 +1,13 @@
+""" Module containing UI class and executing ui
+"""
 # %%
+# standard imports
+import sys
+import time
+import logging
+import os
+
+
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -13,25 +22,32 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QLCDNumber,
 )
-import sys
+
 from PyQt6 import uic
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread
 import numpy as np
 import cv2
-import time
-import logging
 
 
+# Module imports
 from experiment_classes.gradient_experiment import GradientExperiment
 from experiment_classes.original_schnock import SchnockExperiment
 
+# %%
+
 
 class VideoThread(QThread):
+    """Video Threat for Webcam input
+
+    Args:
+        QThread (QThread):
+    """
+
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
     def run(self):
-        # capture from web cam
+        """capture from web cam"""
         cap = cv2.VideoCapture(0)
         while True:
             ret, cv_img = cap.read()
@@ -40,10 +56,20 @@ class VideoThread(QThread):
 
 
 class UI(QMainWindow):
+    """Main UI for the application. Loads the main_ui.ui file.
+    This file can be edited in the QtDesigner program, readme has additional information.
+    Qtdesigner can be opened via makefile
+
+    Args:
+        QMainWindow (QMainWindow): QMainwindow base class
+    """
+
     def __init__(self):
         try:
             super(UI, self).__init__()
-            uic.loadUi("main_ui.ui", self)
+            self.base_dir = os.path.dirname(__file__)
+            self.ui_path = os.path.join(self.base_dir, "main_ui.ui")
+            uic.loadUi(self.ui_path, self)
             logging.basicConfig(level=logging.INFO)
             self.max_img_height = 640
             self.max_img_width = 640
@@ -58,6 +84,12 @@ class UI(QMainWindow):
             self.multiplier = 1
             self.webcam_delay = 1
             self.source_original_image_data = None
+            self.source_image_data = None
+            self.experiment = None
+            self.result_image_data = None
+            self.source_filename = None
+            self.edit_mode_tab = None
+            self.current_edit_mode_tab_name = None
             self.config = {}
             self.define_widgets()
             self.connect_buttons()
@@ -70,6 +102,7 @@ class UI(QMainWindow):
             raise error
 
     def init_values(self):
+        """Initializes attributes in order to be able to load Experimetn classes"""
         self.set_edit_mode()
         if self.config["edit_mode"] == "schnock_original":
             self.init_schnock_experiment()
@@ -79,10 +112,12 @@ class UI(QMainWindow):
             raise Exception("No edit mode specified!")
 
     def init_common_values(self):
+        """Initializes common attribute values"""
         self.set_fast_forward_iterations()
         self.set_webcam_delay()
 
     def init_gradient_experiment(self):
+        """Initializes a GradientExperiment and sets its attributes"""
         self.experiment = GradientExperiment()
         self.config = {}
         self.config["edit_mode"] = "gradient_experiment"
@@ -102,6 +137,7 @@ class UI(QMainWindow):
         self.init_common_values()
 
     def init_schnock_experiment(self):
+        """Initializes a GradientExperiment and sets its attributes"""
         self.experiment = SchnockExperiment()
         self.config = {}
         self.config["edit_mode"] = "schnock_experiment"
@@ -119,6 +155,7 @@ class UI(QMainWindow):
         self.init_common_values()
 
     def define_widgets(self):
+        """Defines widgets as class attributes, these are read from the main_ui.ui file"""
         # Push Buttons
         self.load_source_image_button = self.findChild(
             QPushButton, "pushButton_load_input_image"
@@ -179,24 +216,24 @@ class UI(QMainWindow):
         self.output_start_image_combobox = self.findChild(
             QComboBox, "comboBox_output_start_image"
         )
-        for item in GradientExperiment().output_start_mode_dict.keys():
+        for item in GradientExperiment().output_start_mode_dict:
             self.output_start_image_combobox.addItem(item)
         # Proccessing Modes
         self.multiplier_mode_combobox = self.findChild(
             QComboBox, "comboBox_multiplier_mode"
         )
-        for item in GradientExperiment().dynamic_multpiplier_functions_dict.keys():
+        for item in GradientExperiment().dynamic_multpiplier_functions_dict:
             self.multiplier_mode_combobox.addItem(item)
 
         self.merge_mode_combobox = self.findChild(
             QComboBox, "comboBox_merge_mode")
-        for item in GradientExperiment().merge_mode_functions_dict.keys():
+        for item in GradientExperiment().merge_mode_functions_dict:
             self.merge_mode_combobox.addItem(item)
 
         self.video_merge_mode_combobox = self.findChild(
             QComboBox, "comboBox_video_merge_mode"
         )
-        for item in GradientExperiment().video_merge_mode_functions_dict.keys():
+        for item in GradientExperiment().video_merge_mode_functions_dict:
             self.video_merge_mode_combobox.addItem(item)
 
         # Spinboxes
@@ -242,9 +279,9 @@ class UI(QMainWindow):
         self.high_threshold_lcd_number = self.findChild(
             QLCDNumber, "lcdNumber_high_threshold"
         )
-        pass
 
     def connect_buttons(self):
+        """Connects the buttons to functions"""
         # Push Buttons
         self.load_source_image_button.clicked.connect(
             self.load_source_image_from_file)
@@ -306,7 +343,8 @@ class UI(QMainWindow):
 
     @pyqtSlot(np.ndarray)
     def set_source_image_data(self):
-        if self.config["compute_on_original"] == True:
+        """Sets the source image to appropiate widget"""
+        if self.config["compute_on_original"] is True:
             self.source_image_data = self.source_original_image_data
         else:
             self.source_image_data = self.resize_image(
@@ -320,6 +358,7 @@ class UI(QMainWindow):
         )
 
     def start_video(self):
+        """Starts video threat, will only work if there is an available webcam"""
         if not self.webcam_input_radiobutton.isChecked():
             logging.info("Stopping video Thread")
             # self.thread.stop()
@@ -341,7 +380,7 @@ class UI(QMainWindow):
             return
         self.webcam_frame_counter += 1
         self.source_original_image_data = cv_img
-        if self.config["compute_on_original"] == True:
+        if self.config["compute_on_original"] is True:
             self.source_image_data = self.source_original_image_data
         else:
             self.source_image_data = self.resize_image(
@@ -366,6 +405,7 @@ class UI(QMainWindow):
         )
 
     def load_source_image_from_file(self):
+        """Opens FileDialog to load source image from file."""
         self.source_filename = QFileDialog.getOpenFileName(self, "Open File")[
             0]
         self.source_original_image_data = cv2.imread(self.source_filename)
@@ -373,9 +413,9 @@ class UI(QMainWindow):
         self.set_source_image_data()
         self.set_edit_mode()
         self.reset_output_image()
-        pass
 
     def set_edit_mode(self):
+        """Sets the edit mode to Schnock original or Gradient, will show the correct tab also"""
         self.current_edit_mode_tab_name = (
             self.edit_mode_tab.currentWidget().objectName()
         )
@@ -386,32 +426,49 @@ class UI(QMainWindow):
             self.init_gradient_experiment()
 
         else:
-            raise Exception("Invalid edit mode!")
+            raise ValueError("Invalid edit mode!")
 
     def resize_image(self, image_data):
+        """Resizes image given in argument
+
+        Args:
+            image_data (np.array/cv2 image): Image as npo.array to be resized
+
+        Returns:
+            np.array  (np.array/cv2 image): Resized image
+        """
         scale_percent = min(
             self.max_img_width / image_data.shape[1],
             self.max_img_height / image_data.shape[0],
         )
         width = int(image_data.shape[1] * scale_percent)
         height = int(image_data.shape[0] * scale_percent)
-        newSize = (width, height)
+        new_size = (width, height)
         image_resized = cv2.resize(
-            image_data, newSize, None, None, None, cv2.INTER_AREA
+            image_data, new_size, None, None, None, cv2.INTER_AREA
         )
         return image_resized
 
     def pixmap_from_cv_image(self, cv_image):
+        """Creates a QPixmap from cv2 image
+
+        Args:
+            cv_image (cv2 image): Image to convert
+
+        Returns:
+            QPixmap: Image as QPixmap
+        """
         height, width, _ = cv_image.shape
-        bytesPerLine = 3 * width
-        qImg = QImage(
-            cv_image.data, width, height, bytesPerLine, QImage.Format.Format_RGB888
+        bytes_per_line = 3 * width
+        q_img = QImage(
+            cv_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB888
         ).rgbSwapped()
-        return QPixmap(qImg)
+        return QPixmap(q_img)
 
     # https://stackoverflow.com/questions/7587490/converting-numpy-array-to-opencv-array
 
     def save_as_file(self):
+        """Saves output image as file"""
         if self.experiment.new_matrix is None:
             error_dialog = QErrorMessage()
             error_dialog.showMessage("No image processed")
@@ -421,113 +478,17 @@ class UI(QMainWindow):
             if len(filename) > 0:
                 cv2.imwrite(filename, self.experiment.new_matrix)
 
-    def set_clip_images(self):
-        value = self.clip_images_radio_button.isChecked()
-        self.experiment.set_clip_images(value=value)
-
-    def set_compute_on_original(self):
-        self.config[
-            "compute_on_original"
-        ] = self.compute_on_original_radio_button.isChecked()
-        self.set_source_image_data()
-        self.reset_output_image()
-
-    def set_webcam_delay(self):
-        self.config["webcam_delay"] = self.webcam_delay_horizontal_slider.value()
-        self.webcam_delay_lcd_number.display(self.config["webcam_delay"])
-
-    def set_low_shift(self):
-        self.config["low_shift"] = self.low_shift_spinbox.value()
-        self.experiment.set_low_shift(new_value=self.config["low_shift"])
-
-    def set_mid_shift(self):
-        self.config["mid_shift"] = self.mid_shift_spinbox.value()
-        self.experiment.set_mid_shift(new_value=self.config["mid_shift"])
-
-    def set_high_shift(self):
-        self.config["high_shift"] = self.high_shift_spinbox.value()
-        self.experiment.set_high_shift(new_value=self.config["high_shift"])
-
-    def set_low_threshold(self):
-        self.config["low_threshold"] = self.low_threshold_vertical_slider.value()
-        self.low_threshold_lcd_number.display(self.config["low_threshold"])
-        self.experiment.set_low_threshold(
-            new_value=self.config["low_threshold"])
-
-    def set_mid_threshold(self):
-        self.config["mid_threshold"] = self.mid_threshold_vertical_slider.value()
-        self.mid_threshold_lcd_number.display(self.config["mid_threshold"])
-        self.experiment.set_mid_threshold(
-            new_value=self.config["mid_threshold"])
-
-    def set_high_threshold(self):
-        self.config["high_threshold"] = self.high_threshold_vertical_slider.value()
-        self.high_threshold_lcd_number.display(self.config["high_threshold"])
-        self.experiment.set_high_threshold(
-            new_value=self.config["high_threshold"])
-
-    def set_merge_mode(self):
-        self.config["merge_mode"] = self.merge_mode_combobox.currentText()
-        self.experiment.set_merge_mode(
-            new_merge_mode=self.config["merge_mode"])
-
-    def set_video_merge_mode(self):
-        self.config["video_merge_mode"] = self.video_merge_mode_combobox.currentText()
-        self.experiment.set_video_merge_mode(
-            new_merge_mode=self.config["video_merge_mode"]
-        )
-
-    def set_multiplier_mode(self):
-        self.config["multiplier_mode"] = self.multiplier_mode_combobox.currentText()
-        self.experiment.set_multiplier_mode(
-            new_multiplier_mode=self.config["multiplier_mode"]
-        )
-
-    def set_multiplier_amplitude(self):
-        self.config["amplitue"] = self.multiplier_amplitude_spinbox.value()
-        self.experiment.set_multiplier_amplitude(
-            new_amplitude=self.config["amplitue"])
-
-    def set_multiplier_frequency(self):
-        self.config["frequency"] = self.multiplier_frequency_spinbox.value()
-        self.experiment.set_multiplier_frequency(
-            new_frequency=self.config["frequency"])
-
-    def set_alternate_every_n(self):
-        self.config["alternate_every_n"] = self.alternate_every_n_spinbox.value()
-        self.experiment.set_alternate_every_n(
-            new_value=self.config["alternate_every_n"]
-        )
-
-    def set_output_start_image_mode(self):
-        self.config[
-            "output_start_mode"
-        ] = self.output_start_image_combobox.currentText()
-
-    def set_fast_forward_iterations(self):
-        self.config[
-            "fast_forward_iterations"
-        ] = self.fast_forward_iterations_spinbox.value()
-
-    def reset_output_image(self):
-        if self.config["edit_mode"] == "gradient_experiment":
-            self.experiment.output_start_mode_dict[self.config["output_start_mode"]](
-            )
-            self.result_image_data = self.experiment.new_matrix
-            result_image_resized = self.resize_image(self.result_image_data)
-            self.output_image_label.setPixmap(
-                self.pixmap_from_cv_image(result_image_resized)
-            )
-
     # Image Processing
-
     def process_image(self):
+        """Processes Source Image with current configuratin.
+        If continuous_processing_radiobutton is checked, wil lcontinue processing
+        """
         if self.source_image_data is None:
             error_dialog = QErrorMessage()
             error_dialog.showMessage("No image selected")
             error_dialog.exec()
         else:
-            n = 0
+            iteration_number = 0
             # if self.edit_mode=="schnock_experiment":
             #     self.experiment.pass_source_image(self.source_image_data)
             self.experiment.compute_new_matrix()
@@ -538,12 +499,12 @@ class UI(QMainWindow):
             )
 
             # if self.edit_mode=="gradient_experiment":
-            while self.continuous_processing_radiobutton.isChecked() == True:
-                n += 1
+            while self.continuous_processing_radiobutton.isChecked() is True:
+                iteration_number += 1
                 self.experiment.compute_new_matrix()
                 self.result_image_data = self.experiment.new_matrix
 
-                if n % self.config["fast_forward_iterations"] == 0:
+                if iteration_number % self.config["fast_forward_iterations"] == 0:
                     result_image_resized = self.resize_image(
                         self.result_image_data)
                     self.output_image_label.setPixmap(
@@ -552,6 +513,126 @@ class UI(QMainWindow):
                     # gc.collect()
                     QApplication.processEvents()
                     time.sleep(0)
+
+    # SET ATTRIBUTES
+    # General Attributes
+    def set_clip_images(self):
+        """Indicates if images should be clipped"""
+        value = self.clip_images_radio_button.isChecked()
+        self.experiment.set_clip_images(value=value)
+
+    def set_compute_on_original(self):
+        """Indicates if operations should be on original image or on resized image"""
+        self.config[
+            "compute_on_original"
+        ] = self.compute_on_original_radio_button.isChecked()
+        self.set_source_image_data()
+        self.reset_output_image()
+
+    def set_webcam_delay(self):
+        """Sets the delay of the webcam for gradient experiment"""
+        self.config["webcam_delay"] = self.webcam_delay_horizontal_slider.value()
+        self.webcam_delay_lcd_number.display(self.config["webcam_delay"])
+
+    def set_fast_forward_iterations(self):
+        """Sets fast forward iterations, not really used atm"""
+        self.config[
+            "fast_forward_iterations"
+        ] = self.fast_forward_iterations_spinbox.value()
+
+    # SchnockExperiment attributes
+    def set_low_shift(self):
+        """Sets low shift for SchnockExperiment"""
+        self.config["low_shift"] = self.low_shift_spinbox.value()
+        self.experiment.set_low_shift(new_value=self.config["low_shift"])
+
+    def set_mid_shift(self):
+        """Sets mid shift for SchnockExperiment"""
+        self.config["mid_shift"] = self.mid_shift_spinbox.value()
+        self.experiment.set_mid_shift(new_value=self.config["mid_shift"])
+
+    def set_high_shift(self):
+        """Sets high shift for SchnockExperiment"""
+        self.config["high_shift"] = self.high_shift_spinbox.value()
+        self.experiment.set_high_shift(new_value=self.config["high_shift"])
+
+    def set_low_threshold(self):
+        """Sets low thershold for SchnockExperiment"""
+        self.config["low_threshold"] = self.low_threshold_vertical_slider.value()
+        self.low_threshold_lcd_number.display(self.config["low_threshold"])
+        self.experiment.set_low_threshold(
+            new_value=self.config["low_threshold"])
+
+    def set_mid_threshold(self):
+        """Sets mid thershold for SchnockExperiment"""
+        self.config["mid_threshold"] = self.mid_threshold_vertical_slider.value()
+        self.mid_threshold_lcd_number.display(self.config["mid_threshold"])
+        self.experiment.set_mid_threshold(
+            new_value=self.config["mid_threshold"])
+
+    def set_high_threshold(self):
+        """Sets high thershold for SchnockExperiment"""
+        self.config["high_threshold"] = self.high_threshold_vertical_slider.value()
+        self.high_threshold_lcd_number.display(self.config["high_threshold"])
+        self.experiment.set_high_threshold(
+            new_value=self.config["high_threshold"])
+
+    # GradientExperiment ATTRIBUTES
+    def set_merge_mode(self):
+        """Sets merge mode for GradientExperiment"""
+        self.config["merge_mode"] = self.merge_mode_combobox.currentText()
+        self.experiment.set_merge_mode(
+            new_merge_mode=self.config["merge_mode"])
+
+    def set_video_merge_mode(self):
+        """Sets video merge mode for GradientExperiment"""
+        self.config["video_merge_mode"] = self.video_merge_mode_combobox.currentText()
+        self.experiment.set_video_merge_mode(
+            new_merge_mode=self.config["video_merge_mode"]
+        )
+
+    def set_multiplier_mode(self):
+        """Sets multiplier mode for GradientExperiment"""
+        self.config["multiplier_mode"] = self.multiplier_mode_combobox.currentText()
+        self.experiment.set_multiplier_mode(
+            new_multiplier_mode=self.config["multiplier_mode"]
+        )
+
+    def set_multiplier_amplitude(self):
+        """Sets multiplier amplitude for GradientExperiment"""
+        self.config["amplitue"] = self.multiplier_amplitude_spinbox.value()
+        self.experiment.set_multiplier_amplitude(
+            new_amplitude=self.config["amplitue"])
+
+    def set_multiplier_frequency(self):
+        """Sets multiplier frequency for GradientExperiment"""
+        self.config["frequency"] = self.multiplier_frequency_spinbox.value()
+        self.experiment.set_multiplier_frequency(
+            new_frequency=self.config["frequency"])
+
+    def set_alternate_every_n(self):
+        """Sets alternate_every_n for GradientExperiment"""
+        self.config["alternate_every_n"] = self.alternate_every_n_spinbox.value()
+        self.experiment.set_alternate_every_n(
+            new_value=self.config["alternate_every_n"]
+        )
+
+    def set_output_start_image_mode(self):
+        """Sets sart image mode for GradientExperiment"""
+        self.config[
+            "output_start_mode"
+        ] = self.output_start_image_combobox.currentText()
+
+    def reset_output_image(self):
+        """Resets output image for GradientExperiment"""
+        if self.config["edit_mode"] == "gradient_experiment":
+            self.experiment.output_start_mode_dict[self.config["output_start_mode"]](
+            )
+            self.result_image_data = self.experiment.new_matrix
+            result_image_resized = self.resize_image(self.result_image_data)
+            self.output_image_label.setPixmap(
+                self.pixmap_from_cv_image(result_image_resized)
+            )
 
 
 def main():

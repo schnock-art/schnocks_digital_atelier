@@ -1,3 +1,5 @@
+"""Original Schnock Experiment, edits image on pixel basis.
+"""
 from numba import njit, prange
 import numpy as np
 from experiment_classes.base_experiment import BaseExperiment
@@ -12,6 +14,21 @@ def editar_pixel(
     high_threshold: np.uint8,
     low_threshold: np.uint8,
 ):
+    """Pixel based edition fo image.
+    RGB channels are edited according high mid and low
+    High channel is the channel with the highest value (argmax)
+    Min channel ist the channel with the lowest vlaue (argmin)
+    Mid is the remaining channel.
+    The threshold are applied on the high oird low channel respectively, the threshold is not the same for all pixels.
+
+    Args:
+        pixel (np.array): Input Pixel
+        high_shift (np.uint8): How is the high channel above high threshold edited
+        mid_shift (np.uint8): How is the mid channel edited
+        low_shift (np.uint8): How is the high channel below low threshold edited
+        high_threshold (np.uint8): Threshold for the high channel
+        low_threshold (np.uint8): Threshold for the low channel
+    """
     max_value = pixel.max()
     min_value = pixel.min()
     arg_max = pixel.argmax()
@@ -32,7 +49,7 @@ def editar_pixel(
 
 
 @njit(parallel=False, cache=True, nogil=True, fastmath=False)
-def editar_imagen(
+def edit_image(
     imagen: np.array,
     high_shift: np.uint8 = np.uint8(30),
     mid_shift: np.uint8 = np.uint(0),
@@ -40,6 +57,16 @@ def editar_imagen(
     high_threshold: np.uint8 = np.uint(20),
     low_threshold: np.uint8 = np.uint(20),
 ):
+    """Edits image with given configuration
+
+    Args:
+        imagen (np.array): _description_
+        high_shift (np.uint8, optional): How is the high channel above high threshold edited. Defaults to np.uint8(30).
+        mid_shift (np.uint8, optional): How is the remeaining channel edited. Defaults to np.uint(0).
+        low_shift (np.uint8, optional): How is the low channel below low threshold edited. Defaults to np.uint(20).
+        high_threshold (np.uint8, optional): Threshold for the high channel. Defaults to np.uint(20).
+        low_threshold (np.uint8, optional): Threshold for the low channel. Defaults to np.uint(20).
+    """
     shape = imagen.shape
     shape_x = shape[0]
     shape_y = shape[1]
@@ -56,7 +83,15 @@ def editar_imagen(
 
 
 class SchnockExperiment(BaseExperiment):
+    """Schnock experiments, edits an image Pixel by Pixel with a custom function
+
+    Args:
+        BaseExperiment (BaseExperiment): BaseClass
+    """
+
     def __init__(self):
+        """Intiializes class"""
+        super().__init__()
         self.high_shift = 10
         self.mid_shift = 0
         self.low_shift = 10
@@ -64,27 +99,10 @@ class SchnockExperiment(BaseExperiment):
         self.mid_threshold = 150
         self.low_threshold = 50
 
-    def set_high_shift(self, new_value: int):
-        self.high_shift = np.uint8(new_value)
-
-    def set_mid_shift(self, new_value: int):
-        self.mid_shift = np.uint8(new_value)
-
-    def set_low_shift(self, new_value: int):
-        self.low_shift = np.uint8(new_value)
-
-    def set_low_threshold(self, new_value: int):
-        self.low_threshold = np.uint8(new_value)
-
-    def set_mid_threshold(self, new_value: int):
-        self.mid_threshold = np.uint8(new_value)
-
-    def set_high_threshold(self, new_value: int):
-        self.high_threshold = np.uint8(new_value)
-
+    # Process Image Methods
     def compute_new_matrix(self):
         self.new_matrix = self.source_image.copy()
-        editar_imagen(
+        edit_image(
             self.new_matrix,
             high_shift=self.high_shift,
             mid_shift=self.mid_shift,
@@ -92,6 +110,57 @@ class SchnockExperiment(BaseExperiment):
             high_threshold=self.high_threshold,
             low_threshold=self.low_threshold,
         )
+
+    # Set  Attributes Methods
+    # Set Shifts
+    def set_low_shift(self, new_value: int):
+        """Sets low shift
+
+        Args:
+            new_value (int): New low shift value
+        """
+        self.low_shift = np.uint8(new_value)
+
+    def set_mid_shift(self, new_value: int):
+        """Sets mid shift
+
+        Args:
+            new_value (int): New mid shift value
+        """
+        self.mid_shift = np.uint8(new_value)
+
+    def set_high_shift(self, new_value: int):
+        """Sets high shift
+
+        Args:
+            new_value (int): New High shift value
+        """
+        self.high_shift = np.uint8(new_value)
+
+    # Set thesholds
+    def set_low_threshold(self, new_value: int):
+        """Sets low thershold
+
+        Args:
+            new_value (int): New low thershold value
+        """
+        self.low_threshold = np.uint8(new_value)
+
+    def set_mid_threshold(self, new_value: int):
+        """Sets mid thershold
+
+        Args:
+            new_value (int): New mid thershold value
+        """
+        self.mid_threshold = np.uint8(new_value)
+
+    def set_high_threshold(self, new_value: int):
+        """Sets high thershold
+
+        Args:
+            new_value (int): New high thershold value
+        """
+        self.high_threshold = np.uint8(new_value)
 
 
 # %%

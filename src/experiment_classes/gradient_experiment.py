@@ -1,56 +1,50 @@
+"""Gradient Experiment Module, specific experiment for Schnock UI
+"""
 # %%
+# Standard imports
+import logging
+from math import sin, cos, pi
 
 import numpy as np
-from math import sin, cos, pi
-import logging
+
+
 from experiment_classes.base_experiment import BaseExperiment
 from experiment_classes.original_schnock import SchnockExperiment
 
 
 class GradientExperiment(BaseExperiment):
+    """Gradient Experiment. This class computes the gradients in x+,x-,y+ and y-.
+    Starting witha  blank image (e.g. a gray image), new matrixes are computed with these gradient amtrixes and merged.
+
+    Args:
+        BaseExperiment (BaseExperiment): BaseClass.
+    """
+
     def __init__(self):
-        try:
-            self.source_diff = {}
-            self.source_image = None
-            self.matrix_list = []
-            self.current_iteration_n = 0
-            self.alternate_counter = 0
-            self.multiplier_amplitude = 1
-            self.multiplier_frequency = 4
-            self.grade = 1
-            self.clip_images = False
-            self.alternate_every_n = 0
-            self.initialize_dynamic_multiplier_dict()
-            self.initialize_merge_mode_dict()
-            self.initialize_video_merge_mode_dict()
-            self.initialize_output_start_images_dict()
-        except Exception as error:
-            logging.error(
-                "Failed initialization with error: {0}".format(error))
-            raise error
-
-    def pass_output_start_image(self, output_start_image):
-        self.new_matrix = output_start_image
-
-    def set_clip_images(self, value: bool):
-        self.clip_images = value
-
-    def get_difference_matrices(self):
+        """Initializes class attributes"""
+        super().__init__()
+        self.source_diff = {}
+        self.source_image = None
+        self.difference_matrix = None
+        self.matrix_list = []
         self.padded_source_image = {}
-        for n in range(1, self.grade + 1):
-            self.padded_source_image[n] = np.pad(
-                self.source_image, pad_width=((n, n), (n, n), (0, 0)), mode="edge"
-            )
-            self.source_diff["x_{0}".format(n)] = np.diff(
-                self.padded_source_image[n][n:-n, :, :], n=n, axis=1
-            )
-            self.source_diff["y_{0}".format(n)] = np.diff(
-                self.padded_source_image[n][:, n:-n, :], n=n, axis=0
-            )
+        self.current_iteration_n = 0
+        self.alternate_counter = 0
+        self.multiplier_amplitude = 1
+        self.multiplier_frequency = 4
+        self.grade = 1
+        self.clip_images = False
+        self.alternate_every_n = 0
+        self.dynamic_multiplier = None
+        self.multiplier_mode = None
+        self.video_merge_mode = None
+        self.merge_mode = None
+        self.initialize_dynamic_multiplier_dict()
+        self.initialize_merge_mode_dict()
+        self.initialize_video_merge_mode_dict()
+        self.initialize_output_start_images_dict()
 
-    def compute_from_video(self, source_image):
-        self.pass_source_image(source_image=source_image)
-        self.pass_output_start_image(output_start_image=source_image)
+    # ä#### Process Image Methods
 
     def compute_new_matrix(self):
         self.dynamic_multpiplier_functions_dict[self.multiplier_mode]()
@@ -81,7 +75,7 @@ class GradientExperiment(BaseExperiment):
                 + self.dynamic_multiplier *
                 self.source_diff["y_{0}".format(n)][:-n, :]
             )
-            if self.clip_images == True:
+            if self.clip_images is True:
                 positive_x = np.clip(positive_x, 0, 255)
                 negative_x = np.clip(negative_x, 0, 255)
                 positive_y = np.clip(positive_y, 0, 255)
@@ -97,7 +91,121 @@ class GradientExperiment(BaseExperiment):
         self.merge_mode_functions_dict[self.merge_mode]()
         self.current_iteration_n += 1
 
+    def get_difference_matrices(self):
+        """Computes the gradient matrices for source image"""
+        self.padded_source_image = {}
+        for n in range(1, self.grade + 1):
+            self.padded_source_image[n] = np.pad(
+                self.source_image, pad_width=((n, n), (n, n), (0, 0)), mode="edge"
+            )
+            self.source_diff["x_{0}".format(n)] = np.diff(
+                self.padded_source_image[n][n:-n, :, :], n=n, axis=1
+            )
+            self.source_diff["y_{0}".format(n)] = np.diff(
+                self.padded_source_image[n][:, n:-n, :], n=n, axis=0
+            )
+
+    def compute_from_video(self, source_image):
+        """Computes new matrix for video input
+
+        Args:
+            source_image (_type_): Image from video input
+        """
+        self.pass_source_image(source_image=source_image)
+        self.pass_output_start_image(output_start_image=source_image)
+
+    # Auxiuliary Methods
+    def pass_output_start_image(self, output_start_image):
+        """Passs ouput_start image
+
+        Args:
+            output_start_image (_type_): _description_
+        """
+        self.new_matrix = output_start_image
+
+    # Image Merge modes
+    def merge_average(self):
+        """Merge with average"""
+        logging.debug("Merge mode: Avg")
+        self.new_matrix = np.average(
+            self.difference_matrix, axis=0).astype(np.uint8)
+        return
+
+    def merge_min(self):
+        """Merge with min"""
+        logging.debug("Merge mode: Min")
+        self.new_matrix = np.min(
+            self.difference_matrix, axis=0).astype(np.uint8)
+        return
+
+    def merge_max(self):
+        """Merge with max"""
+        logging.debug("Merge mode: Max")
+        self.new_matrix = np.max(
+            self.difference_matrix, axis=0).astype(np.uint8)
+        return
+
+    def merge_sum(self):
+        """Merge with sum"""
+        logging.debug("Merge mode: Sum")
+        self.new_matrix = np.sum(
+            self.difference_matrix, axis=0).astype(np.uint8)
+        return
+
+    def merge_alternate(self):
+        """Merge alternating between min and max"""
+        mod = self.alternate_counter // self.alternate_every_n
+        if mod == 0:
+            self.merge_max()
+        # elif md==1:
+        #     self.merge_average()
+        elif mod == 1:
+            self.merge_min()
+        else:
+            logging.error(mod)
+            logging.error(self.alternate_counter)
+            raise ValueError("Error modulo")
+        self.alternate_counter += 1
+        mod = self.alternate_counter // self.alternate_every_n
+        if mod == 2:
+            self.alternate_counter = 0
+
+    # Video merge mode
+    def merge_average_video(self):
+        """Merge video with average"""
+        logging.debug("Merge mode: Avg")
+        self.new_matrix = np.average(
+            np.stack((self.new_matrix, self.source_image)), axis=0
+        ).astype(np.uint8)
+        return
+
+    def merge_min_video(self):
+        """Merge video with min"""
+        logging.debug("Merge mode: Min")
+        self.new_matrix = np.min(
+            np.stack((self.new_matrix, self.source_image)), axis=0
+        ).astype(np.uint8)
+        return
+
+    def merge_max_video(self):
+        """Merge video with max"""
+        logging.debug("Merge mode: Max")
+        self.new_matrix = np.max(
+            np.stack((self.new_matrix, self.source_image)), axis=0
+        ).astype(np.uint8)
+        return
+
+    def merge_sum_video(self):
+        """Merge video with sum"""
+        logging.debug("Merge mode: Sum")
+        self.new_matrix = np.sum(
+            np.stack((self.new_matrix, self.source_image)), axis=0
+        ).astype(np.uint8)
+        return
+
+    # Initialize Dictionaries
     def initialize_dynamic_multiplier_dict(self):
+        """ " initializes dynamic multiplier options dictionarys"""
         self.dynamic_multpiplier_functions_dict = {
             "constant": self.dynamic_multiplier_constant,
             # "current_iteration_n": self.dynamic_multiplier_linear_reduction,
@@ -107,6 +215,7 @@ class GradientExperiment(BaseExperiment):
         }
 
     def initialize_merge_mode_dict(self):
+        """ " initializes merge mode options dictionarys"""
         self.merge_mode_functions_dict = {
             "average": self.merge_average,
             "min": self.merge_min,
@@ -116,6 +225,7 @@ class GradientExperiment(BaseExperiment):
         }
 
     def initialize_output_start_images_dict(self):
+        """ " initializes output start image methods dictionarys"""
         self.output_start_mode_dict = {
             "gray": self.ouput_start_image_gray,
             "black": self.ouput_start_image_black,
@@ -126,6 +236,7 @@ class GradientExperiment(BaseExperiment):
         }
 
     def initialize_video_merge_mode_dict(self):
+        """ " initializes video merge mode options dictionarys"""
         self.video_merge_mode_functions_dict = {
             "average": self.merge_average_video,
             "min": self.merge_min_video,
@@ -133,7 +244,18 @@ class GradientExperiment(BaseExperiment):
             "sum": self.merge_sum_video,
         }
 
+    # Set Attributes
+    def set_clip_images(self, value: bool):
+        """sets if output image should be clipped
+
+        Args:
+            value (bool):
+        """
+        self.clip_images = value
+
+    # set output start image
     def ouput_start_image_gray(self):
+        """Sets output start image to gray"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=127, dtype=np.uint8
         )
@@ -141,6 +263,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def ouput_start_image_black(self):
+        """Sets output start image to black"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=0, dtype=np.uint8
         )
@@ -148,6 +271,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def ouput_start_image_white(self):
+        """Sets output start image to white"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=255, dtype=np.uint8
         )
@@ -155,6 +279,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def ouput_start_image_custom(self):
+        """Sets output start image to custom color"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=127, dtype=np.uint8
         )
@@ -162,6 +287,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def ouput_start_image_source_average(self):
+        """Sets output start image to source average color"""
         mean_pixel = np.mean(self.source_image, axis=(0, 1)
                              ).round().astype(np.uint8)
         self.new_matrix = np.full(
@@ -171,6 +297,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def output_start_image_current_source_image(self):
+        """Sets output start image to current source image"""
         if not hasattr(self, "new_matrix"):
             self.new_matrix = self.source_image
         elif self.new_matrix.shape != self.source_image.shape:
@@ -181,6 +308,7 @@ class GradientExperiment(BaseExperiment):
         self.alternate_counter = 0
 
     def output_start_image_schnock_experiment(self):
+        """Sets output start image to Schnock experiment with current parameters"""
         schnock_experiment = SchnockExperiment()
         schnock_experiment.pass_source_image(source_image=self.source_image)
         schnock_experiment.compute_new_matrix()
@@ -188,135 +316,108 @@ class GradientExperiment(BaseExperiment):
         self.current_iteration_n = 0
         self.alternate_counter = 0
 
-    def merge_average(self):
-        logging.debug("Merge mode: Avg")
-        self.new_matrix = np.average(
-            self.difference_matrix, axis=0).astype(np.uint8)
-        return
-
-    def merge_min(self):
-        logging.debug("Merge mode: Min")
-        self.new_matrix = np.min(
-            self.difference_matrix, axis=0).astype(np.uint8)
-        return
-
-    def merge_max(self):
-        logging.debug("Merge mode: Max")
-        self.new_matrix = np.max(
-            self.difference_matrix, axis=0).astype(np.uint8)
-        return
-
-    def merge_sum(self):
-        logging.debug("Merge mode: Sum")
-        self.new_matrix = np.sum(
-            self.difference_matrix, axis=0).astype(np.uint8)
-        return
-
-    def merge_alternate(self):
-        md = self.alternate_counter // self.alternate_every_n
-        if md == 0:
-            self.merge_max()
-        # elif md==1:
-        #     self.merge_average()
-        elif md == 1:
-            self.merge_min()
-        else:
-            logging.error(md)
-            logging.error(self.alternate_counter)
-            raise Exception("Error modulo")
-        self.alternate_counter += 1
-        md = self.alternate_counter // self.alternate_every_n
-        if md == 2:
-            self.alternate_counter = 0
-
-    def merge_average_video(self):
-        logging.debug("Merge mode: Avg")
-        self.new_matrix = np.average(
-            np.stack((self.new_matrix, self.source_image)), axis=0
-        ).astype(np.uint8)
-        return
-
-    def merge_min_video(self):
-        logging.debug("Merge mode: Min")
-        self.new_matrix = np.min(
-            np.stack((self.new_matrix, self.source_image)), axis=0
-        ).astype(np.uint8)
-        return
-
-    def merge_max_video(self):
-        logging.debug("Merge mode: Max")
-        self.new_matrix = np.max(
-            np.stack((self.new_matrix, self.source_image)), axis=0
-        ).astype(np.uint8)
-        return
-
-    def merge_sum_video(self):
-        logging.debug("Merge mode: Sum")
-        self.new_matrix = np.sum(
-            np.stack((self.new_matrix, self.source_image)), axis=0
-        ).astype(np.uint8)
-        return
-
+    # Set merge modes
     def set_merge_mode(self, new_merge_mode: str):
-        if new_merge_mode not in self.merge_mode_functions_dict.keys():
-            raise Exception(
+        """Sets merge mode for images
+
+        Args:
+            new_merge_mode (str): Merge mode, should be in the merge mode dictionary keys
+
+        Raises:
+            ValueError: Invalid merge mode
+        """
+        if new_merge_mode not in self.merge_mode_functions_dict:
+            raise ValueError(
                 "Invalid merge_mode ({0}), merge mode should be in {1}".format(
                     new_merge_mode, self.merge_mode_functions_dict.keys()
                 )
             )
         self.merge_mode = new_merge_mode
-        pass
 
     def set_video_merge_mode(self, new_merge_mode: str):
-        if new_merge_mode not in self.video_merge_mode_functions_dict.keys():
-            raise Exception(
+        """Sets merge mode for video
+
+        Args:
+            new_merge_mode (str): Merge mode, should be in the merge mode dictionary keys
+
+        Raises:
+            ValueError: Invalid merge mode
+        """
+        if new_merge_mode not in self.video_merge_mode_functions_dict:
+            raise ValueError(
                 "Invalid merge_mode ({0}), merge mode should be in {1}".format(
                     new_merge_mode, self.merge_mode_functions_dict.keys()
                 )
             )
         self.video_merge_mode = new_merge_mode
-        pass
 
     def set_multiplier_mode(self, new_multiplier_mode: str):
-        if new_multiplier_mode not in self.dynamic_multpiplier_functions_dict.keys():
-            raise Exception(
-                "Invalid merge_mode ({0}), merge mode should be in {1}".format(
+        """Set multiplier mode
+
+        Args:
+            new_multiplier_mode (str):  mode, should be in the multiplier mode dictionary keys
+
+        Raises:
+            ValueError: Invalid multiplier mode
+        """
+        if new_multiplier_mode not in self.dynamic_multpiplier_functions_dict:
+            raise ValueError(
+                "Invalid multiplier mode ({0}), merge mode should be in {1}".format(
                     new_multiplier_mode, self.dynamic_multpiplier_functions_dict.keys()
                 )
             )
         self.multiplier_mode = new_multiplier_mode
-        pass
 
     def set_multiplier_amplitude(self, new_amplitude: float):
+        """Sets multiplier amplitude
+
+        Args:
+            new_amplitude (float): New multiplier amplitude
+        """
         self.multiplier_amplitude = new_amplitude
 
     def set_multiplier_frequency(self, new_frequency: float):
+        """Sets multiplier frequency
+
+        Args:
+            new_frequency (float): Sets new frequency
+        """
         self.multiplier_frequency = new_frequency
 
-    def set_alternate_every_n(self, new_value):
+    def set_alternate_every_n(self, new_value: int):
+        """Sets altenate every n
+
+        Args:
+            new_value (int): New value for alternazte every_n
+        """
         self.alternate_every_n = new_value
         self.alternate_counter = 0
 
     def dynamic_multiplier_constant(self):
+        """Sets new dynamic multiplier as constant"""
         self.dynamic_multiplier = self.multiplier_amplitude
 
     def dynamic_multiplier_linear_reduction(self):
+        """Sets dynamic multiplier with linear reduction (must be revised)"""
         self.dynamic_multiplier = self.multiplier_amplitude * (
             1 - 1 / self.current_iteration_n
         )
 
     def dynamic_multiplier_exponential_reduction(self):
+        """Sets dynamic multiplier with exponential reduction (must be revised)"""
         self.dynamic_multiplier = 1 + int(
             self.multiplier_amplitude * np.exp(-self.current_iteration_n)
         )
 
     def dynamic_multiplier_cos(self):
+        """Sets dynamic multiplier with cosinus function"""
         self.dynamic_multiplier = int(
             self.multiplier_amplitude
             * cos(2 * pi * self.current_iteration_n / self.multiplier_frequency)
         )
 
     def dynamic_multiplier_sin(self):
+        """Sets dynamic multiplier with sinus function"""
         self.dynamic_multiplier = int(
             self.multiplier_amplitude
             * sin(2 * pi * self.current_iteration_n / self.multiplier_frequency)
