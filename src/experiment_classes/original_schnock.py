@@ -1,7 +1,7 @@
 
 from numba import njit, prange
 import numpy as np
-from base_experiment import BaseExperiment
+from experiment_classes.base_experiment import BaseExperiment
 
 @njit(cache=True, nogil=True, fastmath=False)
 def editar_pixel(

@@ -3,8 +3,8 @@
 import numpy as np
 from math import sin, cos, pi
 import logging
-from base_experiment import BaseExperiment
-from original_schnock import SchnockExperiment
+from experiment_classes.base_experiment import BaseExperiment
+from experiment_classes.original_schnock import SchnockExperiment
 
 
 

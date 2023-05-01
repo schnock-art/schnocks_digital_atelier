@@ -7,7 +7,15 @@ create-env:
 	conda env create -n schnock --file environment.yml
 
 run-gui:
-	python schnock_atelier_ui.py
+	python src/schnock_atelier.py
 
 open-designer:
 	qt6-tools designer
+
+create-exe:
+	pyinstaller  src/schnock_atelier.py --add-data="src/main_ui.ui;." 
+	
+#--noconfirm
+
+execute-spec:
+	pyinstaller schnock_ateliers.spec

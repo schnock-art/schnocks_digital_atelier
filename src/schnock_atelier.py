@@ -14,8 +14,8 @@ import time
 import logging
 
 
-from gradient_experiment import GradientExperiment
-from original_schnock import SchnockExperiment
+from experiment_classes.gradient_experiment import GradientExperiment
+from experiment_classes.original_schnock import SchnockExperiment
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -422,9 +422,13 @@ class UI(QMainWindow):
                     QApplication.processEvents()
                     time.sleep(0)
 
-app=QApplication(sys.argv)
-window = UI()
-app.exec()
+def main():
+    app=QApplication(sys.argv)
+    window = UI()
+    app.exec()
+
+if __name__=="__main__":
+    main()
 
 # # %%# %%
 
