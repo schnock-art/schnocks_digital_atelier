@@ -1,0 +1,5 @@
+[project]
+name = "Schnocks Digital Atelier"
+environment = "schnock"
+version = "0.1.0"
+description = "A project to edit images"
