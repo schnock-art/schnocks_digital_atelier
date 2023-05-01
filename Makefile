@@ -14,8 +14,6 @@ open-designer:
 
 create-exe:
 	pyinstaller  src/schnock_atelier.py --add-data="src/main_ui.ui;." 
-	
-#--noconfirm
 
 execute-spec:
 	pyinstaller schnock_ateliers.spec
