@@ -2,10 +2,13 @@
 """
 # %%
 # standard imports
+from experiment_classes.original_schnock import SchnockExperiment
+from experiment_classes.gradient_experiment import GradientExperiment
 import sys
 import time
 import logging
 import os
+import json
 
 
 from PyQt6.QtWidgets import (
@@ -25,16 +28,14 @@ from PyQt6.QtWidgets import (
 
 from PyQt6 import uic
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
 import numpy as np
 import cv2
 
+translate = QCoreApplication.translate
+
 
 # Module imports
-from experiment_classes.gradient_experiment import GradientExperiment
-from experiment_classes.original_schnock import SchnockExperiment
-
-# %%
 
 
 class VideoThread(QThread):
@@ -474,9 +475,15 @@ class UI(QMainWindow):
             error_dialog.showMessage("No image processed")
             error_dialog.exec()
         else:
-            filename = QFileDialog.getSaveFileName(self, "Save File")[0]
+            filename = QFileDialog.getSaveFileName(
+                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)")[0]
+            filename = os.path.abspath(filename)
+            filename_wo_ext = os.path.splitext(filename)[0]
+            # file_extension = os.path.splitext(filename)[1]
             if len(filename) > 0:
                 cv2.imwrite(filename, self.experiment.new_matrix)
+                with open("{0}_config.json".format(filename_wo_ext), "w") as outfile:
+                    json.dump(self.config, outfile, indent=4)
 
     # Image Processing
     def process_image(self):
