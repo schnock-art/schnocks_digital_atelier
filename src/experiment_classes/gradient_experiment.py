@@ -28,17 +28,17 @@ class GradientExperiment(BaseExperiment):
         self.difference_matrix = None
         self.matrix_list = []
         self.padded_source_image = {}
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
-        self.multiplier_amplitude = 1
-        self.multiplier_frequency = 4
-        self.grade = 1
-        self.clip_images = False
-        self.alternate_every_n = 0
-        self.dynamic_multiplier = None
-        self.multiplier_mode = None
-        self.video_merge_mode = None
-        self.merge_mode = None
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
+        self.config["multiplier_amplitude"] = 1
+        self.config["multiplier_frequency"] = 4
+        self.config["grade"] = 1
+        self.config["clip_images"] = False
+        self.config["alternate_every_n"] = 0
+        self.config["dynamic_multipler"] = None
+        self.config["multiplier_mode"] = None
+        self.config["video_merge_mode"] = None
+        self.config["merge_mode"] = None
         self.initialize_dynamic_multiplier_dict()
         self.initialize_merge_mode_dict()
         self.initialize_video_merge_mode_dict()
@@ -47,35 +47,36 @@ class GradientExperiment(BaseExperiment):
     # ä#### Process Image Methods
 
     def compute_new_matrix(self):
-        self.dynamic_multpiplier_functions_dict[self.multiplier_mode]()
-        logging.debug("Dynamic multiplier: {0}".format(
-            self.dynamic_multiplier))
+        self.dynamic_multpiplier_functions_dict[self.config["multiplier_mode"]](
+        )
+        logging.debug("Dynamic multiplier: {0}".format(self.config["dynamic_multiplier"])
+                      )
         matrix_stack = []
-        for n in range(1, self.grade + 1):
+        for n in range(1, self.config["grade"] + 1):
             padded_n = np.pad(
                 self.new_matrix, pad_width=((n, n), (n, n), (0, 0)), mode="edge"
             )
             positive_x = padded_n[
                 n:-n, (n + 1):, :
-            ] + self.dynamic_multiplier * np.negative(
+            ] + self.config["dynamic_multiplier"] * np.negative(
                 self.source_diff["x_{0}".format(n)][:, n:, :]
             )
             negative_x = (
                 padded_n[n:-n, : -(n + 1), :]
-                + self.dynamic_multiplier
+                + self.config["dynamic_multiplier"]
                 * self.source_diff["x_{0}".format(n)][:, :-n, :]
             )
             positive_y = padded_n[
                 (n + 1):, n:-n, :
-            ] + self.dynamic_multiplier * np.negative(
+            ] + self.config["dynamic_multiplier"] * np.negative(
                 self.source_diff["y_{0}".format(n)][n:, :]
             )
             negative_y = (
                 padded_n[0: -(n + 1), n:-n, :]
-                + self.dynamic_multiplier *
+                + self.config["dynamic_multiplier"] *
                 self.source_diff["y_{0}".format(n)][:-n, :]
             )
-            if self.clip_images is True:
+            if self.config["clip_images"] is True:
                 positive_x = np.clip(positive_x, 0, 255)
                 negative_x = np.clip(negative_x, 0, 255)
                 positive_y = np.clip(positive_y, 0, 255)
@@ -88,13 +89,13 @@ class GradientExperiment(BaseExperiment):
             ]
 
         self.difference_matrix = np.stack(tuple(matrix_stack))
-        self.merge_mode_functions_dict[self.merge_mode]()
-        self.current_iteration_n += 1
+        self.merge_mode_functions_dict[self.config["merge_mode"]]()
+        self.config["current_iteration_n"] += 1
 
     def get_difference_matrices(self):
         """Computes the gradient matrices for source image"""
         self.padded_source_image = {}
-        for n in range(1, self.grade + 1):
+        for n in range(1, self.config["grade"] + 1):
             self.padded_source_image[n] = np.pad(
                 self.source_image, pad_width=((n, n), (n, n), (0, 0)), mode="edge"
             )
@@ -154,7 +155,7 @@ class GradientExperiment(BaseExperiment):
 
     def merge_alternate(self):
         """Merge alternating between min and max"""
-        mod = self.alternate_counter // self.alternate_every_n
+        mod = self.config["alternate_counter"] // self.config["alternate_every_n"]
         if mod == 0:
             self.merge_max()
         # elif md==1:
@@ -163,12 +164,12 @@ class GradientExperiment(BaseExperiment):
             self.merge_min()
         else:
             logging.error(mod)
-            logging.error(self.alternate_counter)
+            logging.error(self.config["alternate_counter"])
             raise ValueError("Error modulo")
-        self.alternate_counter += 1
-        mod = self.alternate_counter // self.alternate_every_n
+        self.config["alternate_counter"] += 1
+        mod = self.config["alternate_counter"] // self.config["alternate_every_n"]
         if mod == 2:
-            self.alternate_counter = 0
+            self.config["alternate_counter"] = 0
 
     # Video merge mode
     def merge_average_video(self):
@@ -251,7 +252,7 @@ class GradientExperiment(BaseExperiment):
         Args:
             value (bool):
         """
-        self.clip_images = value
+        self.config["clip_images"] = value
 
     # set output start image
     def ouput_start_image_gray(self):
@@ -259,32 +260,32 @@ class GradientExperiment(BaseExperiment):
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=127, dtype=np.uint8
         )
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def ouput_start_image_black(self):
         """Sets output start image to black"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=0, dtype=np.uint8
         )
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def ouput_start_image_white(self):
         """Sets output start image to white"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=255, dtype=np.uint8
         )
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def ouput_start_image_custom(self):
         """Sets output start image to custom color"""
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=127, dtype=np.uint8
         )
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def ouput_start_image_source_average(self):
         """Sets output start image to source average color"""
@@ -293,8 +294,8 @@ class GradientExperiment(BaseExperiment):
         self.new_matrix = np.full(
             shape=self.source_image.shape, fill_value=mean_pixel, dtype=np.uint8
         )
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def output_start_image_current_source_image(self):
         """Sets output start image to current source image"""
@@ -303,9 +304,10 @@ class GradientExperiment(BaseExperiment):
         elif self.new_matrix.shape != self.source_image.shape:
             self.new_matrix = self.source_image
         else:
-            self.video_merge_mode_functions_dict[self.video_merge_mode]()
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+            self.video_merge_mode_functions_dict[self.config["video_merge_mode"]](
+            )
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     def output_start_image_schnock_experiment(self):
         """Sets output start image to Schnock experiment with current parameters"""
@@ -313,8 +315,8 @@ class GradientExperiment(BaseExperiment):
         schnock_experiment.pass_source_image(source_image=self.source_image)
         schnock_experiment.compute_new_matrix()
         self.new_matrix = schnock_experiment.new_matrix
-        self.current_iteration_n = 0
-        self.alternate_counter = 0
+        self.config["current_iteration_n"] = 0
+        self.config["alternate_counter"] = 0
 
     # Set merge modes
     def set_merge_mode(self, new_merge_mode: str):
@@ -332,7 +334,7 @@ class GradientExperiment(BaseExperiment):
                     new_merge_mode, self.merge_mode_functions_dict.keys()
                 )
             )
-        self.merge_mode = new_merge_mode
+        self.config["merge_mode"] = new_merge_mode
 
     def set_video_merge_mode(self, new_merge_mode: str):
         """Sets merge mode for video
@@ -349,7 +351,7 @@ class GradientExperiment(BaseExperiment):
                     new_merge_mode, self.merge_mode_functions_dict.keys()
                 )
             )
-        self.video_merge_mode = new_merge_mode
+        self.config["video_merge_mode"] = new_merge_mode
 
     def set_multiplier_mode(self, new_multiplier_mode: str):
         """Set multiplier mode
@@ -366,7 +368,7 @@ class GradientExperiment(BaseExperiment):
                     new_multiplier_mode, self.dynamic_multpiplier_functions_dict.keys()
                 )
             )
-        self.multiplier_mode = new_multiplier_mode
+        self.config["multiplier_mode"] = new_multiplier_mode
 
     def set_multiplier_amplitude(self, new_amplitude: float):
         """Sets multiplier amplitude
@@ -374,7 +376,7 @@ class GradientExperiment(BaseExperiment):
         Args:
             new_amplitude (float): New multiplier amplitude
         """
-        self.multiplier_amplitude = new_amplitude
+        self.config["multiplier_amplitude"] = new_amplitude
 
     def set_multiplier_frequency(self, new_frequency: float):
         """Sets multiplier frequency
@@ -382,7 +384,7 @@ class GradientExperiment(BaseExperiment):
         Args:
             new_frequency (float): Sets new frequency
         """
-        self.multiplier_frequency = new_frequency
+        self.config["multiplier_frequency"] = new_frequency
 
     def set_alternate_every_n(self, new_value: int):
         """Sets altenate every n
@@ -390,37 +392,38 @@ class GradientExperiment(BaseExperiment):
         Args:
             new_value (int): New value for alternazte every_n
         """
-        self.alternate_every_n = new_value
-        self.alternate_counter = 0
+        self.config["alternate_every_n"] = new_value
+        self.config["alternate_counter"] = 0
 
     def dynamic_multiplier_constant(self):
         """Sets new dynamic multiplier as constant"""
-        self.dynamic_multiplier = self.multiplier_amplitude
+        self.config["dynamic_multiplier"] = self.config["multiplier_amplitude"]
 
     def dynamic_multiplier_linear_reduction(self):
         """Sets dynamic multiplier with linear reduction (must be revised)"""
-        self.dynamic_multiplier = self.multiplier_amplitude * (
-            1 - 1 / self.current_iteration_n
+        self.config["dynamic_multiplier"] = self.config["multiplier_amplitude"] * (
+            1 - 1 / self.config["current_iteration_n"]
         )
 
     def dynamic_multiplier_exponential_reduction(self):
         """Sets dynamic multiplier with exponential reduction (must be revised)"""
-        self.dynamic_multiplier = 1 + int(
-            self.multiplier_amplitude * np.exp(-self.current_iteration_n)
+        self.config["dynamic_multiplier"] = 1 + int(
+            self.config["multiplier_amplitude"] *
+            np.exp(-self.config["current_iteration_n"])
         )
 
     def dynamic_multiplier_cos(self):
         """Sets dynamic multiplier with cosinus function"""
-        self.dynamic_multiplier = int(
-            self.multiplier_amplitude
-            * cos(2 * pi * self.current_iteration_n / self.multiplier_frequency)
+        self.config["dynamic_multiplier"] = int(
+            self.config["multiplier_amplitude"]
+            * cos(2 * pi * self.config["current_iteration_n"] / self.config["multiplier_frequency"])
         )
 
     def dynamic_multiplier_sin(self):
         """Sets dynamic multiplier with sinus function"""
-        self.dynamic_multiplier = int(
-            self.multiplier_amplitude
-            * sin(2 * pi * self.current_iteration_n / self.multiplier_frequency)
+        self.config["dynamic_multiplier"] = int(
+            self.config["multiplier_amplitude"]
+            * sin(2 * pi * self.config["current_iteration_n"] / self.config["multiplier_frequency"])
         )
 
 

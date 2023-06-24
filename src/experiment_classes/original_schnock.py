@@ -97,23 +97,23 @@ class SchnockExperiment(BaseExperiment):
     def __init__(self):
         """Intiializes class"""
         super().__init__()
-        self.high_shift = 10
-        self.mid_shift = 0
-        self.low_shift = 10
-        self.high_threshold = 220
-        self.mid_threshold = 150
-        self.low_threshold = 50
+        self.config["high_shift"] = 10
+        self.config["mid_shift"] = 0
+        self.config["low_shift"] = 10
+        self.config["high_threshold"] = 220
+        self.config["mid_threshold"] = 150
+        self.config["low_threshold"] = 50
 
     # Process Image Methods
     def compute_new_matrix(self):
         self.new_matrix = self.source_image.copy()
         edit_image(
             self.new_matrix,
-            high_shift=self.high_shift,
-            mid_shift=self.mid_shift,
-            low_shift=self.low_shift,
-            high_threshold=self.high_threshold,
-            low_threshold=self.low_threshold,
+            high_shift=self.config["high_shift"],
+            mid_shift=self.config["mid_shift"],
+            low_shift=self.config["low_shift"],
+            high_threshold=self.config["high_threshold"],
+            low_threshold=self.config["low_threshold"],
         )
 
     # Set  Attributes Methods
@@ -124,7 +124,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New low shift value
         """
-        self.low_shift = np.uint8(new_value)
+        self.config["low_shift"] = np.uint8(new_value)
 
     def set_mid_shift(self, new_value: int):
         """Sets mid shift
@@ -132,7 +132,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New mid shift value
         """
-        self.mid_shift = np.uint8(new_value)
+        self.config["mid_shift"] = np.uint8(new_value)
 
     def set_high_shift(self, new_value: int):
         """Sets high shift
@@ -140,7 +140,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New High shift value
         """
-        self.high_shift = np.uint8(new_value)
+        self.config["high_shift"] = np.uint8(new_value)
 
     # Set thesholds
     def set_low_threshold(self, new_value: int):
@@ -149,7 +149,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New low thershold value
         """
-        self.low_threshold = np.uint8(new_value)
+        self.config["low_threshold"] = np.uint8(new_value)
 
     def set_mid_threshold(self, new_value: int):
         """Sets mid thershold
@@ -157,7 +157,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New mid thershold value
         """
-        self.mid_threshold = np.uint8(new_value)
+        self.config["mid_threshold"] = np.uint8(new_value)
 
     def set_high_threshold(self, new_value: int):
         """Sets high thershold
@@ -165,7 +165,7 @@ class SchnockExperiment(BaseExperiment):
         Args:
             new_value (int): New high thershold value
         """
-        self.high_threshold = np.uint8(new_value)
+        self.config["high_threshold"] = np.uint8(new_value)
 
 
 # %%

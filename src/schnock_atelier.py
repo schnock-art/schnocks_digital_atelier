@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QTabWidget,
     QLCDNumber,
+    QInputDialog
 )
 
 from PyQt6 import uic
@@ -164,6 +165,9 @@ class UI(QMainWindow):
         self.process_image_button = self.findChild(
             QPushButton, "pushButton_process_image"
         )
+        self.process_folder_button = self.findChild(
+            QPushButton, "pushButton_process_folder"
+        )
         self.next_image_button = self.findChild(
             QPushButton, "pushButton_next_image")
         self.previous_image_button = self.findChild(
@@ -287,6 +291,7 @@ class UI(QMainWindow):
         self.load_source_image_button.clicked.connect(
             self.load_source_image_from_file)
         self.process_image_button.clicked.connect(self.process_image)
+        self.process_folder_button.clicked.connect(self.process_folder)
         self.save_image_button.clicked.connect(self.save_as_file)
         self.reset_output_image_button.clicked.connect(self.reset_output_image)
 
@@ -475,15 +480,17 @@ class UI(QMainWindow):
             error_dialog.showMessage("No image processed")
             error_dialog.exec()
         else:
-            filename = QFileDialog.getSaveFileName(
+            output_file_path = QFileDialog.getSaveFileName(
                 self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)")[0]
-            filename = os.path.abspath(filename)
-            filename_wo_ext = os.path.splitext(filename)[0]
-            # file_extension = os.path.splitext(filename)[1]
-            if len(filename) > 0:
-                cv2.imwrite(filename, self.experiment.new_matrix)
-                with open("{0}_config.json".format(filename_wo_ext), "w") as outfile:
-                    json.dump(self.config, outfile, indent=4)
+            self.experiment.set_output_path(output_path=output_file_path)
+            self.experiment.save_output_image(save_config=True)
+            # filename = os.path.abspath(filename)
+            # filename_wo_ext = os.path.splitext(filename)[0]
+            # # file_extension = os.path.splitext(filename)[1]
+            # if len(filename) > 0:
+            #     cv2.imwrite(filename, self.experiment.new_matrix)
+            #     with open("{0}_config.json".format(filename_wo_ext), "w") as outfile:
+            #         json.dump(self.config, outfile, indent=4)
 
     # Image Processing
     def process_image(self):
@@ -520,6 +527,52 @@ class UI(QMainWindow):
                     # gc.collect()
                     QApplication.processEvents()
                     time.sleep(0)
+
+    # Folder Processing
+    def process_folder(self):
+        """Processes Source Image with current configuratin.
+        If continuous_processing_radiobutton is checked, wil lcontinue processing
+        """
+        image_folder_to_process = os.path.abspath(
+            QFileDialog.getExistingDirectory(self, "Select Directory with images"))
+        self.experiment.set_input_directory(
+            input_directory=image_folder_to_process)
+        self.select_extension_dialog()
+        # image_outputfolder_to_process=os.path.abspath(QFileDialog.getExistingDirectory(self, "Select Output Directory"))
+        # self.experiment.set_output_directory(output_directory=image_outputfolder_to_process)
+        self.experiment.process_folder()
+
+        # self.processing_folder=True
+        # if self.edit_mode=="schnock_experiment":
+        #     self.experiment.pass_source_image(self.source_image_data)
+        # self.experiment.compute_new_matrix()
+        # self.result_image_data = self.experiment.new_matrix
+        # result_image_resized = self.resize_image(self.result_image_data)
+        # self.output_image_label.setPixmap(
+        #     self.pixmap_from_cv_image(result_image_resized)
+        # )
+
+        # if self.edit_mode=="gradient_experiment":
+        # while self.continuous_processing_radiobutton.isChecked() is True:
+        #     iteration_number += 1
+        #     self.experiment.compute_new_matrix()
+        #     self.result_image_data = self.experiment.new_matrix
+
+        #     if iteration_number % self.config["fast_forward_iterations"] == 0:
+        #         result_image_resized = self.resize_image(
+        #             self.result_image_data)
+        #         self.output_image_label.setPixmap(
+        #             self.pixmap_from_cv_image(result_image_resized)
+        #         )
+        #         # gc.collect()
+        #         QApplication.processEvents()
+        #         time.sleep(0)
+
+    def select_extension_dialog(self):
+        text, ok = QInputDialog.getText(self, 'Select file extension',
+                                        'Enter image extension (e.g. ".jpg", ".png"):')
+        if ok:
+            self.experiment.set_file_extension(str(text).upper())
 
     # SET ATTRIBUTES
     # General Attributes

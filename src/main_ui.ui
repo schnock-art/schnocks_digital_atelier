@@ -489,6 +489,19 @@
        </property>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pushButton_process_folder">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>108</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Process Folder</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_video_mode">
      <attribute name="title">
