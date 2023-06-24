@@ -33,19 +33,24 @@ def editar_pixel(
     min_value = pixel.min()
     arg_max = pixel.argmax()
     arg_min = pixel.argmin()
-    arg_mid = 3 - arg_max - arg_min
+    # arg_mid = 3 - arg_max - arg_min
     if max_value < low_threshold:
-        pixel[arg_max] += low_shift
+        # Darker pixels
+        pixel[arg_max] += mid_shift
         # pixel[arg_mid] += mid_shift
-        # pixel[arg_min] = 0 #max(0, pixel[arg_min]-low_shift)
+        pixel[arg_min] = max(0, pixel[arg_min]-low_shift)
     elif min_value > high_threshold:
-        pixel[arg_min] -= high_shift
-        pixel[arg_mid] -= mid_shift
-        # pixel[arg_max] -= low_shift
+        # Brighter pixels
+        pixel[arg_min] = min(255, pixel[arg_min] + high_shift)
+        # pixel[arg_mid] = min(255, pixel[arg_mid] + mid_shift)
+        pixel[arg_max] = min(255, pixel[arg_max] - low_shift)
     else:
-        pixel[arg_max] = 255
-        pixel[arg_mid] += mid_shift
-        pixel[arg_min] = 0
+        # Main  illuminated area
+        pixel[arg_max] = min(255, pixel[arg_max] + high_shift)
+        # pixel[arg_max] = 255
+        # pixel[arg_mid] += mid_shift
+        pixel[arg_min] = max(0, pixel[arg_min] - low_shift)
+        # pixel[arg_min] = 0
 
 
 @njit(parallel=False, cache=True, nogil=True, fastmath=False)
