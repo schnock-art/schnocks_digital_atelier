@@ -116,8 +116,11 @@ class SchnockExperiment(BaseExperiment):
             low_threshold=self.config["low_threshold"],
         )
 
+    def process_source_image(self):
+        self.compute_new_matrix()
     # Set  Attributes Methods
     # Set Shifts
+
     def set_low_shift(self, new_value: int):
         """Sets low shift
 

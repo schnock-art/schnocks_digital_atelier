@@ -158,6 +158,7 @@ class UI(QMainWindow):
 
     def define_widgets(self):
         """Defines widgets as class attributes, these are read from the main_ui.ui file"""
+        logging.debug("Defining Widgets")
         # Push Buttons
         self.load_source_image_button = self.findChild(
             QPushButton, "pushButton_load_input_image"
@@ -330,6 +331,8 @@ class UI(QMainWindow):
             self.set_compute_on_original
         )
         self.webcam_input_radiobutton.toggled.connect(self.start_video)
+        self.continuous_processing_radiobutton.toggled.connect(
+            self.process_image)
 
         # Horizontal Sliders
         self.webcam_delay_horizontal_slider.valueChanged.connect(
@@ -599,6 +602,9 @@ class UI(QMainWindow):
         self.config[
             "fast_forward_iterations"
         ] = self.fast_forward_iterations_spinbox.value()
+        self.experiment.set_fast_forward_iterations(
+            self.config["fast_forward_iterations"]
+        )
 
     # SchnockExperiment attributes
     def set_low_shift(self):
@@ -693,6 +699,8 @@ class UI(QMainWindow):
             self.output_image_label.setPixmap(
                 self.pixmap_from_cv_image(result_image_resized)
             )
+
+# %%
 
 
 def main():

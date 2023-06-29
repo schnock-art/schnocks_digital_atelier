@@ -106,6 +106,15 @@ class GradientExperiment(BaseExperiment):
                 self.padded_source_image[n][:, n:-n, :], n=n, axis=0
             )
 
+    def process_source_image(self):
+        self.get_difference_matrices()
+        self.ouput_start_image_gray()
+        iteration = 0
+        while iteration < self.config["fast_forward_iterations"]:
+            self.compute_new_matrix()
+            iteration += 1
+        pass
+
     def compute_from_video(self, source_image):
         """Computes new matrix for video input
 

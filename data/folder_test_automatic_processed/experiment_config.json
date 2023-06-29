@@ -9,5 +9,6 @@
     "dynamic_multipler": null,
     "multiplier_mode": "constant",
     "video_merge_mode": "average",
-    "merge_mode": "average"
+    "merge_mode": "average",
+    "fast_forward_iterations": 1
 }

@@ -7,6 +7,7 @@ import logging
 import json
 
 from .utils import NpEncoder
+from .progressbar import ProgressBar
 
 
 class BaseExperiment:
@@ -119,9 +120,14 @@ class BaseExperiment:
         self.get_all_images_in_input_directory()
 
         self.save_config_json(folder=True)
-
+        self.total_progess = len(self.input_diretory_files_list)
+        self.progressBar = ProgressBar(max_value=self.total_progess)
+        self.current_progress = 0
+        self.progressBar.updateBar(value=self.current_progress)
         for path in self.input_diretory_files_list:
             self.process_path(path=path)
+            self.current_progress += 1
+            self.progressBar.updateBar(value=self.current_progress)
         # Parallel(n_jobs=num_cores)(delayed(self.process_path)(path=i) for i in self.input_diretory_files_list)
         # end_time=datetime.now()
         # print("Total time: {0}".format(end_time-start_time))
@@ -136,7 +142,7 @@ class BaseExperiment:
 
     def process_path(self, path: str, output_path: str = None, save_config: bool = False):
         self.load_source_image(source_image_path=path)
-        self.compute_new_matrix()
+        self.process_source_image()
         self.set_output_path(output_path=output_path)
         self.save_output_image(save_config=save_config)
 
@@ -172,7 +178,13 @@ class BaseExperiment:
         with open(self.config_path, "w") as outfile:
             json.dump(self.config, outfile, indent=4, cls=NpEncoder)
 
+    def process_source_image(self):
+        """placeholder for subclasses
+        """
+        pass
 
+    def set_fast_forward_iterations(self, new_value):
+        self.config["fast_forward_iterations"] = new_value
 # %%
 
 
