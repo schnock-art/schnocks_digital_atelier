@@ -2,10 +2,13 @@
 """
 # %%
 # standard imports
+from experiment_classes.original_schnock import SchnockExperiment
+from experiment_classes.gradient_experiment import GradientExperiment
 import sys
 import time
 import logging
 import os
+import json
 
 
 from PyQt6.QtWidgets import (
@@ -21,20 +24,19 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QTabWidget,
     QLCDNumber,
+    QInputDialog
 )
 
 from PyQt6 import uic
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
 import numpy as np
 import cv2
 
+translate = QCoreApplication.translate
+
 
 # Module imports
-from experiment_classes.gradient_experiment import GradientExperiment
-from experiment_classes.original_schnock import SchnockExperiment
-
-# %%
 
 
 class VideoThread(QThread):
@@ -156,12 +158,16 @@ class UI(QMainWindow):
 
     def define_widgets(self):
         """Defines widgets as class attributes, these are read from the main_ui.ui file"""
+        logging.debug("Defining Widgets")
         # Push Buttons
         self.load_source_image_button = self.findChild(
             QPushButton, "pushButton_load_input_image"
         )
         self.process_image_button = self.findChild(
             QPushButton, "pushButton_process_image"
+        )
+        self.process_folder_button = self.findChild(
+            QPushButton, "pushButton_process_folder"
         )
         self.next_image_button = self.findChild(
             QPushButton, "pushButton_next_image")
@@ -286,6 +292,7 @@ class UI(QMainWindow):
         self.load_source_image_button.clicked.connect(
             self.load_source_image_from_file)
         self.process_image_button.clicked.connect(self.process_image)
+        self.process_folder_button.clicked.connect(self.process_folder)
         self.save_image_button.clicked.connect(self.save_as_file)
         self.reset_output_image_button.clicked.connect(self.reset_output_image)
 
@@ -324,6 +331,8 @@ class UI(QMainWindow):
             self.set_compute_on_original
         )
         self.webcam_input_radiobutton.toggled.connect(self.start_video)
+        self.continuous_processing_radiobutton.toggled.connect(
+            self.process_image)
 
         # Horizontal Sliders
         self.webcam_delay_horizontal_slider.valueChanged.connect(
@@ -474,9 +483,17 @@ class UI(QMainWindow):
             error_dialog.showMessage("No image processed")
             error_dialog.exec()
         else:
-            filename = QFileDialog.getSaveFileName(self, "Save File")[0]
-            if len(filename) > 0:
-                cv2.imwrite(filename, self.experiment.new_matrix)
+            output_file_path = QFileDialog.getSaveFileName(
+                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)")[0]
+            self.experiment.set_output_path(output_path=output_file_path)
+            self.experiment.save_output_image(save_config=True)
+            # filename = os.path.abspath(filename)
+            # filename_wo_ext = os.path.splitext(filename)[0]
+            # # file_extension = os.path.splitext(filename)[1]
+            # if len(filename) > 0:
+            #     cv2.imwrite(filename, self.experiment.new_matrix)
+            #     with open("{0}_config.json".format(filename_wo_ext), "w") as outfile:
+            #         json.dump(self.config, outfile, indent=4)
 
     # Image Processing
     def process_image(self):
@@ -514,6 +531,52 @@ class UI(QMainWindow):
                     QApplication.processEvents()
                     time.sleep(0)
 
+    # Folder Processing
+    def process_folder(self):
+        """Processes Source Image with current configuratin.
+        If continuous_processing_radiobutton is checked, wil lcontinue processing
+        """
+        image_folder_to_process = os.path.abspath(
+            QFileDialog.getExistingDirectory(self, "Select Directory with images"))
+        self.experiment.set_input_directory(
+            input_directory=image_folder_to_process)
+        self.select_extension_dialog()
+        # image_outputfolder_to_process=os.path.abspath(QFileDialog.getExistingDirectory(self, "Select Output Directory"))
+        # self.experiment.set_output_directory(output_directory=image_outputfolder_to_process)
+        self.experiment.process_folder()
+
+        # self.processing_folder=True
+        # if self.edit_mode=="schnock_experiment":
+        #     self.experiment.pass_source_image(self.source_image_data)
+        # self.experiment.compute_new_matrix()
+        # self.result_image_data = self.experiment.new_matrix
+        # result_image_resized = self.resize_image(self.result_image_data)
+        # self.output_image_label.setPixmap(
+        #     self.pixmap_from_cv_image(result_image_resized)
+        # )
+
+        # if self.edit_mode=="gradient_experiment":
+        # while self.continuous_processing_radiobutton.isChecked() is True:
+        #     iteration_number += 1
+        #     self.experiment.compute_new_matrix()
+        #     self.result_image_data = self.experiment.new_matrix
+
+        #     if iteration_number % self.config["fast_forward_iterations"] == 0:
+        #         result_image_resized = self.resize_image(
+        #             self.result_image_data)
+        #         self.output_image_label.setPixmap(
+        #             self.pixmap_from_cv_image(result_image_resized)
+        #         )
+        #         # gc.collect()
+        #         QApplication.processEvents()
+        #         time.sleep(0)
+
+    def select_extension_dialog(self):
+        text, ok = QInputDialog.getText(self, 'Select file extension',
+                                        'Enter image extension (e.g. ".jpg", ".png"):')
+        if ok:
+            self.experiment.set_file_extension(str(text).upper())
+
     # SET ATTRIBUTES
     # General Attributes
     def set_clip_images(self):
@@ -539,6 +602,9 @@ class UI(QMainWindow):
         self.config[
             "fast_forward_iterations"
         ] = self.fast_forward_iterations_spinbox.value()
+        self.experiment.set_fast_forward_iterations(
+            self.config["fast_forward_iterations"]
+        )
 
     # SchnockExperiment attributes
     def set_low_shift(self):
@@ -633,6 +699,8 @@ class UI(QMainWindow):
             self.output_image_label.setPixmap(
                 self.pixmap_from_cv_image(result_image_resized)
             )
+
+# %%
 
 
 def main():
