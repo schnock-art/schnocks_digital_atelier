@@ -113,6 +113,7 @@ class GradientExperiment(BaseExperiment):
         while iteration < self.config["fast_forward_iterations"]:
             self.compute_new_matrix()
             iteration += 1
+        self.image_list = [self.new_matrix]
         pass
 
     def compute_from_video(self, source_image):

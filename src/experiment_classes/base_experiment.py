@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 import logging
 import json
+from skimage.exposure import match_histograms
 
 from .utils import NpEncoder
-from .progressbar import ProgressBar
 
 
 class BaseExperiment:
@@ -22,6 +22,8 @@ class BaseExperiment:
         self.output_directory = None
         self.file_extension = None
         self.input_diretory_files_list = None
+        self.image_list = []
+        self.histogram_images = []
         self.config = {}
         self.valid_file_extensions = [
             ".JPG",
@@ -121,13 +123,9 @@ class BaseExperiment:
 
         self.save_config_json(folder=True)
         self.total_progess = len(self.input_diretory_files_list)
-        self.progressBar = ProgressBar(max_value=self.total_progess)
-        self.current_progress = 0
-        self.progressBar.updateBar(value=self.current_progress)
+
         for path in self.input_diretory_files_list:
             self.process_path(path=path)
-            self.current_progress += 1
-            self.progressBar.updateBar(value=self.current_progress)
         # Parallel(n_jobs=num_cores)(delayed(self.process_path)(path=i) for i in self.input_diretory_files_list)
         # end_time=datetime.now()
         # print("Total time: {0}".format(end_time-start_time))
@@ -143,27 +141,75 @@ class BaseExperiment:
     def process_path(self, path: str, output_path: str = None, save_config: bool = False):
         self.load_source_image(source_image_path=path)
         self.process_source_image()
+        self.alternate_channels()
+        self.histogram_matching()
         self.set_output_path(output_path=output_path)
-        self.save_output_image(save_config=save_config)
+        self.save_output_images(save_config=save_config)
+
+    def histogram_matching(self):
+        self.histogram_images = [
+            match_histograms(
+                cv2.cvtColor(self.source_image, cv2.COLOR_BGR2RGB),
+                self.new_matrix
+            )
+        ]
+        for image in self.image_list:
+            self.histogram_images.append(
+                match_histograms(
+                    cv2.cvtColor(self.source_image, cv2.COLOR_BGR2RGB),
+                    image,
+                    channel_axis=-1
+                )
+            )
+
+    def alternate_channels(self):
+        self.image_list = [
+            self.new_matrix,
+            self.new_matrix[:, :, [1, 2, 0]],
+            self.new_matrix[:, :, [2, 1, 0]],
+            self.new_matrix[:, :, [1, 0, 2]],
+            self.new_matrix[:, :, [0, 2, 1]],
+        ]
 
     def set_output_path(self, output_path: str = None):
-        if output_path is None:
-            self.output_image_path = self.source_image_path.replace(
-                self.input_directory, self.output_directory)
-        else:
+        if output_path is not None:
             self.output_image_path = os.path.abspath(output_path)
 
-    def save_output_image(self, save_config: bool = False):
+        elif self.input_directory is not None:
+            self.output_image_path = self.source_image_path.replace(
+                self.input_directory, self.output_directory
+            )
+        else:
+            self.output_image_path = self.source_image_path
+
+    def save_output_images(self, save_config: bool = False):
 
         os.makedirs(os.path.dirname(self.output_image_path), exist_ok=True)
-
-        if os.path.exists(self.output_image_path):
-            raise Exception("Output image already exists!")
 
         self.output_image_path_wo_extension = os.path.splitext(self.output_image_path)[
             0]
 
-        cv2.imwrite(self.output_image_path, self.new_matrix)
+        n = 0
+        for image in self.image_list:
+            current_path = self.output_image_path.replace(
+                self.output_image_path_wo_extension,
+                self.output_image_path_wo_extension + "_{0}".format(n)
+            )
+            if os.path.exists(current_path):
+                raise Exception("Output image already exists!")
+            cv2.imwrite(current_path, image)
+            n += 1
+
+        n = 0
+        for image in self.histogram_images:
+            current_path = self.output_image_path.replace(
+                self.output_image_path_wo_extension,
+                self.output_image_path_wo_extension + "_hist_{0}".format(n)
+            )
+            if os.path.exists(current_path):
+                raise Exception("Output image already exists!")
+            cv2.imwrite(current_path, image)
+            n += 1
 
         if save_config:
             self.save_config_json()

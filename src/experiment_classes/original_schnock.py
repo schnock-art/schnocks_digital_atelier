@@ -1,8 +1,10 @@
 """Original Schnock Experiment, edits image on pixel basis.
 """
+# %%
 from numba import njit, prange
 import numpy as np
 from experiment_classes.base_experiment import BaseExperiment
+import cv2
 
 
 @njit(cache=True, nogil=True, fastmath=False)
@@ -46,11 +48,11 @@ def editar_pixel(
         pixel[arg_max] = min(255, pixel[arg_max] - low_shift)
     else:
         # Main  illuminated area
-        pixel[arg_max] = min(255, pixel[arg_max] + high_shift)
-        # pixel[arg_max] = 255
+        # pixel[arg_max] = min(255, pixel[arg_max] + high_shift)
+        pixel[arg_max] = 255
         # pixel[arg_mid] += mid_shift
-        pixel[arg_min] = max(0, pixel[arg_min] - low_shift)
-        # pixel[arg_min] = 0
+        # pixel[arg_min] = max(0, pixel[arg_min] - low_shift)
+        pixel[arg_min] = 0
 
 
 @njit(parallel=False, cache=True, nogil=True, fastmath=False)
@@ -118,6 +120,19 @@ class SchnockExperiment(BaseExperiment):
 
     def process_source_image(self):
         self.compute_new_matrix()
+        # if alternate_channels:
+        #     self.image_list=[
+        #         self.new_matrix,
+        #         self.new_matrix[:, :, [1, 2, 0]],
+        #         self.new_matrix[:, :, [2, 1, 0]],
+        #         self.new_matrix[:, :, [1, 0, 2]],
+        #         self.new_matrix[:, :, [0, 2, 1]],
+        #     ]
+        # else:
+        #     self.image_list=[self.new_matrix]
+        # if compute_histogram:
+        #     self.histogram_matching()
+
     # Set  Attributes Methods
     # Set Shifts
 
@@ -172,7 +187,8 @@ class SchnockExperiment(BaseExperiment):
 
 
 # %%
-if __name__ == "__main__":
-    experiment = SchnockExperiment()
-    # TODO: Implement launching from command line
+# if __name__ == "__main__":
+#     experiment = SchnockExperiment()
+#     #experiment.load_source_image(source_image_path=r"..\data\DSC03351.JPG")
+#     experiment.process_path(path=r"..\data\DSC03351.JPG")
 # %%
