@@ -1603,6 +1603,10 @@
    'C:\\Users\\jange\\Python '
    'Scripts\\schnocks_digital_atelier\\src\\experiment_classes\\original_schnock.py',
    'PYMODULE'),
+  ('experiment_classes.utils',
+   'C:\\Users\\jange\\Python '
+   'Scripts\\schnocks_digital_atelier\\src\\experiment_classes\\utils.py',
+   'PYMODULE'),
   ('filecmp',
    'C:\\Users\\jange\\anaconda3\\envs\\schnock\\lib\\filecmp.py',
    'PYMODULE'),

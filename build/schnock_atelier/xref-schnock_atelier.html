@@ -365,6 +365,7 @@ imports:
  &#8226;   <a href="#genericpath">genericpath</a>
  &#8226;   <a href="#heapq">heapq</a>
  &#8226;   <a href="#io">io</a>
+ &#8226;   <a href="#json">json</a>
  &#8226;   <a href="#keyword">keyword</a>
  &#8226;   <a href="#linecache">linecache</a>
  &#8226;   <a href="#locale">locale</a>
@@ -638,7 +639,7 @@ imported by:
   <a target="code" href="" type="text/plain"><tt>'org.python'</tt></a>
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
-    <a href="#copy">copy</a>
+    <a href="#pickle">pickle</a>
  &#8226;   <a href="#xml.sax">xml.sax</a>
 
   </div>
@@ -6442,8 +6443,10 @@ imported by:
   <a target="code" href="///C:/Users/jange/anaconda3/envs/schnock/lib/site-packages/PyQt6/__init__.py" type="text/plain"><tt>PyQt6</tt></a>
 <span class="moduletype">Package</span>  <div class="import">
 imports:
-    <a href="#PyQt6.QtGui">PyQt6.QtGui</a>
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtGui">PyQt6.QtGui</a>
  &#8226;   <a href="#PyQt6.QtSvg">PyQt6.QtSvg</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
  &#8226;   <a href="#PyQt6.sip">PyQt6.sip</a>
  &#8226;   <a href="#PyQt6.uic">PyQt6.uic</a>
  &#8226;   <a href="#os">os</a>
@@ -6480,6 +6483,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#IPython.external.qt_loaders">IPython.external.qt_loaders</a>
+ &#8226;   <a href="#PyQt6">PyQt6</a>
  &#8226;   <a href="#PyQt6.QtGui">PyQt6.QtGui</a>
  &#8226;   <a href="#PyQt6.QtSvg">PyQt6.QtSvg</a>
  &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
@@ -6543,6 +6547,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#IPython.external.qt_loaders">IPython.external.qt_loaders</a>
+ &#8226;   <a href="#PyQt6">PyQt6</a>
  &#8226;   <a href="#PyQt6.uic.Loader.loader">PyQt6.uic.Loader.loader</a>
  &#8226;   <a href="#PyQt6.uic.Loader.qobjectcreator">PyQt6.uic.Loader.qobjectcreator</a>
  &#8226;   <a href="#PyQt6.uic.load_ui">PyQt6.uic.load_ui</a>
@@ -14595,8 +14600,8 @@ imported by:
   <a target="code" href="///C:/Users/jange/anaconda3/envs/schnock/lib/copy.py" type="text/plain"><tt>copy</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
-    <a href="#'org.python'">'org.python'</a>
- &#8226;   <a href="#copyreg">copyreg</a>
+    <a href="#copyreg">copyreg</a>
+ &#8226;   <a href="#org">org</a>
  &#8226;   <a href="#types">types</a>
  &#8226;   <a href="#weakref">weakref</a>
 
@@ -15356,6 +15361,7 @@ imported by:
  &#8226;   <a href="#dateutil.tz.win">dateutil.tz.win</a>
  &#8226;   <a href="#dill._objects">dill._objects</a>
  &#8226;   <a href="#email.utils">email.utils</a>
+ &#8226;   <a href="#experiment_classes.utils">experiment_classes.utils</a>
  &#8226;   <a href="#http.cookiejar">http.cookiejar</a>
  &#8226;   <a href="#http.server">http.server</a>
  &#8226;   <a href="#ipykernel.jsonutil">ipykernel.jsonutil</a>
@@ -21019,6 +21025,7 @@ imported by:
     <a href="#experiment_classes.base_experiment">experiment_classes.base_experiment</a>
  &#8226;   <a href="#experiment_classes.gradient_experiment">experiment_classes.gradient_experiment</a>
  &#8226;   <a href="#experiment_classes.original_schnock">experiment_classes.original_schnock</a>
+ &#8226;   <a href="#experiment_classes.utils">experiment_classes.utils</a>
 
   </div>
 
@@ -21031,6 +21038,9 @@ imported by:
 imports:
     <a href="#cv2">cv2</a>
  &#8226;   <a href="#experiment_classes">experiment_classes</a>
+ &#8226;   <a href="#experiment_classes.utils">experiment_classes.utils</a>
+ &#8226;   <a href="#json">json</a>
+ &#8226;   <a href="#logging">logging</a>
  &#8226;   <a href="#numpy">numpy</a>
  &#8226;   <a href="#os">os</a>
 
@@ -21080,6 +21090,25 @@ imports:
 imported by:
     <a href="#experiment_classes.gradient_experiment">experiment_classes.gradient_experiment</a>
  &#8226;   <a href="#schnock_atelier.py">schnock_atelier.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="experiment_classes.utils"></a>
+  <a target="code" href="///C:/Users/jange/Python%20Scripts/schnocks_digital_atelier/src/experiment_classes/utils.py" type="text/plain"><tt>experiment_classes.utils</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#datetime">datetime</a>
+ &#8226;   <a href="#experiment_classes">experiment_classes</a>
+ &#8226;   <a href="#json">json</a>
+ &#8226;   <a href="#numpy">numpy</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#experiment_classes.base_experiment">experiment_classes.base_experiment</a>
 
   </div>
 
@@ -26841,6 +26870,8 @@ imported by:
  &#8226;   <a href="#debugpy._version">debugpy._version</a>
  &#8226;   <a href="#debugpy.common.json">debugpy.common.json</a>
  &#8226;   <a href="#debugpy.server.api">debugpy.server.api</a>
+ &#8226;   <a href="#experiment_classes.base_experiment">experiment_classes.base_experiment</a>
+ &#8226;   <a href="#experiment_classes.utils">experiment_classes.utils</a>
  &#8226;   <a href="#ipykernel.connect">ipykernel.connect</a>
  &#8226;   <a href="#ipykernel.kernelspec">ipykernel.kernelspec</a>
  &#8226;   <a href="#jedi.api.project">jedi.api.project</a>
@@ -26856,6 +26887,7 @@ imported by:
  &#8226;   <a href="#numba.core.event">numba.core.event</a>
  &#8226;   <a href="#numba.testing._runtests">numba.testing._runtests</a>
  &#8226;   <a href="#numpy._version">numpy._version</a>
+ &#8226;   <a href="#schnock_atelier.py">schnock_atelier.py</a>
  &#8226;   <a href="#setuptools.config._validate_pyproject.error_reporting">setuptools.config._validate_pyproject.error_reporting</a>
  &#8226;   <a href="#setuptools.msvc">setuptools.msvc</a>
  &#8226;   <a href="#tornado.escape">tornado.escape</a>
@@ -28960,6 +28992,7 @@ imported by:
  &#8226;   <a href="#concurrent.futures._base">concurrent.futures._base</a>
  &#8226;   <a href="#dill._objects">dill._objects</a>
  &#8226;   <a href="#dill.logger">dill.logger</a>
+ &#8226;   <a href="#experiment_classes.base_experiment">experiment_classes.base_experiment</a>
  &#8226;   <a href="#experiment_classes.gradient_experiment">experiment_classes.gradient_experiment</a>
  &#8226;   <a href="#hashlib">hashlib</a>
  &#8226;   <a href="#http.cookiejar">http.cookiejar</a>
@@ -40435,6 +40468,7 @@ imported by:
  &#8226;   <a href="#experiment_classes.base_experiment">experiment_classes.base_experiment</a>
  &#8226;   <a href="#experiment_classes.gradient_experiment">experiment_classes.gradient_experiment</a>
  &#8226;   <a href="#experiment_classes.original_schnock">experiment_classes.original_schnock</a>
+ &#8226;   <a href="#experiment_classes.utils">experiment_classes.utils</a>
  &#8226;   <a href="#ipykernel.pickleutil">ipykernel.pickleutil</a>
  &#8226;   <a href="#numba.core.errors">numba.core.errors</a>
  &#8226;   <a href="#numba.core.inline_closurecall">numba.core.inline_closurecall</a>
@@ -45543,7 +45577,7 @@ imported by:
   <a target="code" href="" type="text/plain"><tt>org</tt></a>
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
-    <a href="#pickle">pickle</a>
+    <a href="#copy">copy</a>
 
   </div>
 
@@ -47334,14 +47368,14 @@ imported by:
   <a target="code" href="///C:/Users/jange/anaconda3/envs/schnock/lib/pickle.py" type="text/plain"><tt>pickle</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
-    <a href="#_compat_pickle">_compat_pickle</a>
+    <a href="#'org.python'">'org.python'</a>
+ &#8226;   <a href="#_compat_pickle">_compat_pickle</a>
  &#8226;   <a href="#_pickle">_pickle</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#copyreg">copyreg</a>
  &#8226;   <a href="#functools">functools</a>
  &#8226;   <a href="#io">io</a>
  &#8226;   <a href="#itertools">itertools</a>
- &#8226;   <a href="#org">org</a>
  &#8226;   <a href="#pprint">pprint</a>
  &#8226;   <a href="#re">re</a>
  &#8226;   <a href="#struct">struct</a>

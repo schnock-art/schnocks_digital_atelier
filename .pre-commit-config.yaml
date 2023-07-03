@@ -25,10 +25,10 @@ repos:
           language: system
           always_run: true
           pass_filenames: false
-        -   id: conda-export
-            name: conda-export
-            entry: python -m environment
-            language: python
-            additional_dependencies: [toml, pyyaml]
-            pass_filenames: false
-            always_run: true
+        - id: conda-export
+          name: conda-export
+          entry: python -m environment
+          language: python
+          additional_dependencies: [toml, pyyaml]
+          pass_filenames: false
+          always_run: true
