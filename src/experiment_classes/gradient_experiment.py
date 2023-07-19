@@ -49,32 +49,29 @@ class GradientExperiment(BaseExperiment):
     def compute_new_matrix(self):
         self.dynamic_multpiplier_functions_dict[self.config["multiplier_mode"]](
         )
-        logging.debug("Dynamic multiplier: {0}".format(self.config["dynamic_multiplier"])
-                      )
+        logging.debug(
+            "Dynamic multiplier: {0}".format(self.config["dynamic_multiplier"])
+        )
         matrix_stack = []
         for n in range(1, self.config["grade"] + 1):
             padded_n = np.pad(
                 self.new_matrix, pad_width=((n, n), (n, n), (0, 0)), mode="edge"
             )
-            positive_x = padded_n[
-                n:-n, (n + 1):, :
-            ] + self.config["dynamic_multiplier"] * np.negative(
-                self.source_diff["x_{0}".format(n)][:, n:, :]
-            )
+            positive_x = padded_n[n:-n, (n + 1):, :] + self.config[
+                "dynamic_multiplier"
+            ] * np.negative(self.source_diff["x_{0}".format(n)][:, n:, :])
             negative_x = (
                 padded_n[n:-n, : -(n + 1), :]
                 + self.config["dynamic_multiplier"]
                 * self.source_diff["x_{0}".format(n)][:, :-n, :]
             )
-            positive_y = padded_n[
-                (n + 1):, n:-n, :
-            ] + self.config["dynamic_multiplier"] * np.negative(
-                self.source_diff["y_{0}".format(n)][n:, :]
-            )
+            positive_y = padded_n[(n + 1):, n:-n, :] + self.config[
+                "dynamic_multiplier"
+            ] * np.negative(self.source_diff["y_{0}".format(n)][n:, :])
             negative_y = (
                 padded_n[0: -(n + 1), n:-n, :]
-                + self.config["dynamic_multiplier"] *
-                self.source_diff["y_{0}".format(n)][:-n, :]
+                + self.config["dynamic_multiplier"]
+                * self.source_diff["y_{0}".format(n)][:-n, :]
             )
             if self.config["clip_images"] is True:
                 positive_x = np.clip(positive_x, 0, 255)
@@ -418,22 +415,32 @@ class GradientExperiment(BaseExperiment):
     def dynamic_multiplier_exponential_reduction(self):
         """Sets dynamic multiplier with exponential reduction (must be revised)"""
         self.config["dynamic_multiplier"] = 1 + int(
-            self.config["multiplier_amplitude"] *
-            np.exp(-self.config["current_iteration_n"])
+            self.config["multiplier_amplitude"]
+            * np.exp(-self.config["current_iteration_n"])
         )
 
     def dynamic_multiplier_cos(self):
         """Sets dynamic multiplier with cosinus function"""
         self.config["dynamic_multiplier"] = int(
             self.config["multiplier_amplitude"]
-            * cos(2 * pi * self.config["current_iteration_n"] / self.config["multiplier_frequency"])
+            * cos(
+                2
+                * pi
+                * self.config["current_iteration_n"]
+                / self.config["multiplier_frequency"]
+            )
         )
 
     def dynamic_multiplier_sin(self):
         """Sets dynamic multiplier with sinus function"""
         self.config["dynamic_multiplier"] = int(
             self.config["multiplier_amplitude"]
-            * sin(2 * pi * self.config["current_iteration_n"] / self.config["multiplier_frequency"])
+            * sin(
+                2
+                * pi
+                * self.config["current_iteration_n"]
+                / self.config["multiplier_frequency"]
+            )
         )
 
 

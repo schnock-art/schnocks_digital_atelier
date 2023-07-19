@@ -2,16 +2,11 @@
 """
 # %%
 # standard imports
-from experiment_classes.original_schnock import SchnockExperiment
-from experiment_classes.gradient_experiment import GradientExperiment
-import sys
-import time
-import logging
-import os
-import json
-import requests
-r = requests.get('http://github.com/', allow_redirects=False)
-
+import cv2
+import numpy as np
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
+from PyQt6.QtGui import QPixmap, QImage
+from PyQt6 import uic
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -25,14 +20,19 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QTabWidget,
     QLCDNumber,
-    QInputDialog
+    QInputDialog,
 )
+from experiment_classes.original_schnock import SchnockExperiment
+from experiment_classes.gradient_experiment import GradientExperiment
+import sys
+import time
+import logging
+import os
+import json
+import requests
 
-from PyQt6 import uic
-from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
-import numpy as np
-import cv2
+r = requests.get("http://github.com/", allow_redirects=False)
+
 
 translate = QCoreApplication.translate
 
@@ -178,7 +178,7 @@ class UI(QMainWindow):
         self.set_output_as_input_button = self.findChild(
             QPushButton, "pushButton_set_output_as_input"
         )
-        
+
         self.save_image_button = self.findChild(
             QPushButton, "pushButton_save_image")
         self.reset_output_image_button = self.findChild(
@@ -300,7 +300,8 @@ class UI(QMainWindow):
         self.process_folder_button.clicked.connect(self.process_folder)
         self.save_image_button.clicked.connect(self.save_as_file)
         self.reset_output_image_button.clicked.connect(self.reset_output_image)
-        self.set_output_as_input_button.clicked.connect(self.set_output_as_input)
+        self.set_output_as_input_button.clicked.connect(
+            self.set_output_as_input)
 
         # Combo boxes
         self.merge_mode_combobox.currentTextChanged.connect(
@@ -490,7 +491,8 @@ class UI(QMainWindow):
             error_dialog.exec()
         else:
             output_file_path = QFileDialog.getSaveFileName(
-                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)")[0]
+                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)"
+            )[0]
             self.experiment.set_output_path(output_path=output_file_path)
             self.experiment.save_output_image(save_config=True)
             # filename = os.path.abspath(filename)
@@ -543,7 +545,9 @@ class UI(QMainWindow):
         If continuous_processing_radiobutton is checked, wil lcontinue processing
         """
         image_folder_to_process = os.path.abspath(
-            QFileDialog.getExistingDirectory(self, "Select Directory with images"))
+            QFileDialog.getExistingDirectory(
+                self, "Select Directory with images")
+        )
         self.experiment.set_input_directory(
             input_directory=image_folder_to_process)
         self.select_extension_dialog()
@@ -578,8 +582,11 @@ class UI(QMainWindow):
         #         time.sleep(0)
 
     def select_extension_dialog(self):
-        text, ok = QInputDialog.getText(self, 'Select file extension',
-                                        'Enter image extension (e.g. ".jpg", ".png"):')
+        text, ok = QInputDialog.getText(
+            self,
+            "Select file extension",
+            'Enter image extension (e.g. ".jpg", ".png"):',
+        )
         if ok:
             self.experiment.set_file_extension(str(text).upper())
 
@@ -705,12 +712,13 @@ class UI(QMainWindow):
             self.output_image_label.setPixmap(
                 self.pixmap_from_cv_image(result_image_resized)
             )
-    
+
     def set_output_as_input(self):
         """Sets output image as input image for Experiment"""
         self.source_original_image_data = self.result_image_data
         self.set_source_image_data()
         self.reset_output_image()
+
 
 # %%
 

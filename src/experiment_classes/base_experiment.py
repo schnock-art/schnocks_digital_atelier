@@ -25,10 +25,7 @@ class BaseExperiment:
         self.image_list = []
         self.histogram_images = []
         self.config = {}
-        self.valid_file_extensions = [
-            ".JPG",
-            ".PNG"
-        ]
+        self.valid_file_extensions = [".JPG", ".PNG"]
 
     def load_source_image(
         self, source_folder_path: str = None, source_image_path: str = None
@@ -74,7 +71,9 @@ class BaseExperiment:
         self.input_directory = os.path.abspath(input_directory)
         if not os.path.isdir(self.input_directory):
             raise Exception(
-                "Input directory {0} is not a directory!".format(self.input_directory))
+                "Input directory {0} is not a directory!".format(
+                    self.input_directory)
+            )
 
     def set_output_directory(self, output_directory: str = None):
         if output_directory is None:
@@ -91,7 +90,6 @@ class BaseExperiment:
             raise
 
     def set_file_extension(self, file_extension: str):
-
         if file_extension is None:
             if self.file_extension is None:
                 raise Exception("Must specify a file extension!")
@@ -99,14 +97,16 @@ class BaseExperiment:
             file_extension = file_extension.upper()
             if file_extension not in self.valid_file_extensions:
                 raise Exception(
-                    "{0} Not a valid file extension!".format(file_extension))
+                    "{0} Not a valid file extension!".format(file_extension)
+                )
             self.file_extension = file_extension
 
-    def process_folder(self,
-                       input_directory: str = None,
-                       output_directory: str = None,
-                       file_extension: str = None,
-                       ):
+    def process_folder(
+        self,
+        input_directory: str = None,
+        output_directory: str = None,
+        file_extension: str = None,
+    ):
         if input_directory is not None:
             self.set_input_directory(input_directory=input_directory)
         if self.input_directory is None:
@@ -136,9 +136,12 @@ class BaseExperiment:
             for filename in files:
                 if filename.endswith(self.file_extension):
                     self.input_diretory_files_list.append(
-                        os.path.join(address, filename))
+                        os.path.join(address, filename)
+                    )
 
-    def process_path(self, path: str, output_path: str = None, save_config: bool = False):
+    def process_path(
+        self, path: str, output_path: str = None, save_config: bool = False
+    ):
         self.load_source_image(source_image_path=path)
         self.process_source_image()
         self.alternate_channels()
@@ -149,8 +152,8 @@ class BaseExperiment:
     def histogram_matching(self):
         self.histogram_images = [
             match_histograms(
-                cv2.cvtColor(self.source_image, cv2.COLOR_BGR2RGB),
-                self.new_matrix
+                cv2.cvtColor(self.source_image,
+                             cv2.COLOR_BGR2RGB), self.new_matrix
             )
         ]
         for image in self.image_list:
@@ -158,7 +161,7 @@ class BaseExperiment:
                 match_histograms(
                     cv2.cvtColor(self.source_image, cv2.COLOR_BGR2RGB),
                     image,
-                    channel_axis=-1
+                    channel_axis=-1,
                 )
             )
 
@@ -183,17 +186,17 @@ class BaseExperiment:
             self.output_image_path = self.source_image_path
 
     def save_output_images(self, save_config: bool = False):
-
         os.makedirs(os.path.dirname(self.output_image_path), exist_ok=True)
 
         self.output_image_path_wo_extension = os.path.splitext(self.output_image_path)[
-            0]
+            0
+        ]
 
         n = 0
         for image in self.image_list:
             current_path = self.output_image_path.replace(
                 self.output_image_path_wo_extension,
-                self.output_image_path_wo_extension + "_{0}".format(n)
+                self.output_image_path_wo_extension + "_{0}".format(n),
             )
             if os.path.exists(current_path):
                 raise Exception("Output image already exists!")
@@ -204,7 +207,7 @@ class BaseExperiment:
         for image in self.histogram_images:
             current_path = self.output_image_path.replace(
                 self.output_image_path_wo_extension,
-                self.output_image_path_wo_extension + "_hist_{0}".format(n)
+                self.output_image_path_wo_extension + "_hist_{0}".format(n),
             )
             if os.path.exists(current_path):
                 raise Exception("Output image already exists!")
@@ -217,7 +220,8 @@ class BaseExperiment:
     def save_config_json(self, folder: bool = False):
         if folder:
             self.config_path = os.path.join(
-                self.output_directory, "experiment_config.json")
+                self.output_directory, "experiment_config.json"
+            )
         else:
             filename_wo_ext = os.path.splitext(self.source_image_path)[0]
             self.config_path = "{0}_config.json".format(filename_wo_ext)
@@ -225,12 +229,13 @@ class BaseExperiment:
             json.dump(self.config, outfile, indent=4, cls=NpEncoder)
 
     def process_source_image(self):
-        """placeholder for subclasses
-        """
+        """placeholder for subclasses"""
         pass
 
     def set_fast_forward_iterations(self, new_value):
         self.config["fast_forward_iterations"] = new_value
+
+
 # %%
 
 
