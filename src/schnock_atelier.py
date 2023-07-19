@@ -179,16 +179,143 @@ class UI(QMainWindow):
     def define_widgets(self):
         """Defines widgets as class attributes, these are read from the main_ui.ui file"""
         logging.debug("Defining Widgets")
-        self.define_pushbutton_widgets()
-        self.define_radiobutton_widgets()
-        self.define_image_widgets()
-        self.define_slider_widgets()
-        self.define_combobox_widgets()
-        self.define_spinbox_widgets()
-        self.define_tabs_widgets()
-        self.define_lcd_number_widgets()
+        self.define_general_widgets()
+        self.define_gradient_experiment_widgets()
+        self.define_schnock_experiment_widgets()
+        self.define_gabor_experiment_widgets()
 
-    def define_pushbutton_widgets(self):
+    def define_general_widgets(self):
+        """Defines general widgets, these are read from the main_ui.ui file"""
+        # General
+        self.define_general_pushbutton_widgets()
+        self.define_general_radiobutton_widgets()
+        self.fast_forward_iterations_spinbox = self.findChild(
+            QSpinBox, "spinBox_fast_forward_iterations"
+        )
+        # Horizontal sliders
+        self.webcam_delay_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_webcam_delay"
+        )
+        # LCD Numbers
+        self.webcam_delay_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_webcam_delay"
+        )
+        self.define_image_widgets()
+        self.define_tabs_widgets()
+
+    def define_gradient_experiment_widgets(self):
+        """Defines Gradient Experiment widgets, these are read from the main_ui.ui file"""
+        # Gradient Experiment
+        self.reset_output_image_button = self.findChild(
+            QPushButton, "pushButton_reset_output"
+        )
+        self.clip_images_radio_button = self.findChild(
+            QRadioButton, "radioButton_clip_images"
+        )
+
+        # Comboboxes
+        # Output start image
+        self.output_start_image_combobox = self.findChild(
+            QComboBox, "comboBox_output_start_image"
+        )
+        for item in GradientExperiment().output_start_mode_dict:
+            self.output_start_image_combobox.addItem(item)
+
+        # Proccessing Modes
+        self.multiplier_mode_combobox = self.findChild(
+            QComboBox, "comboBox_multiplier_mode"
+        )
+        for item in GradientExperiment().dynamic_multpiplier_functions_dict:
+            self.multiplier_mode_combobox.addItem(item)
+
+        self.merge_mode_combobox = self.findChild(
+            QComboBox, "comboBox_merge_mode")
+        for item in GradientExperiment().merge_mode_functions_dict:
+            self.merge_mode_combobox.addItem(item)
+
+        self.video_merge_mode_combobox = self.findChild(
+            QComboBox, "comboBox_video_merge_mode"
+        )
+        for item in GradientExperiment().video_merge_mode_functions_dict:
+            self.video_merge_mode_combobox.addItem(item)
+
+        # Spinboxes
+        self.multiplier_amplitude_spinbox = self.findChild(
+            QSpinBox, "spinBox_multiplier_amplitude"
+        )
+        self.multiplier_frequency_spinbox = self.findChild(
+            QSpinBox, "spinBox_multiplier_frequency"
+        )
+
+        self.alternate_every_n_spinbox = self.findChild(
+            QSpinBox, "spinBox_alternate_every_n"
+        )
+
+    def define_schnock_experiment_widgets(self):
+        """Defines Schnock Experiment widgets, these are read from the main_ui.ui file"""
+        # Schnock Experiment
+        # Vertical sliders
+        self.low_threshold_vertical_slider = self.findChild(
+            QSlider, "verticalSlider_low_threshold"
+        )
+        self.mid_threshold_vertical_slider = self.findChild(
+            QSlider, "verticalSlider_mid_threshold"
+        )
+        self.high_threshold_vertical_slider = self.findChild(
+            QSlider, "verticalSlider_high_threshold"
+        )
+        # Spinboxes
+        self.low_shift_spinbox = self.findChild(QSpinBox, "spinBox_low_shift")
+        self.mid_shift_spinbox = self.findChild(QSpinBox, "spinBox_mid_shift")
+        self.high_shift_spinbox = self.findChild(
+            QSpinBox, "spinBox_high_shift")
+
+        # LCD Numbers
+        self.low_threshold_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_low_threshold")
+        self.mid_threshold_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_mid_threshold")
+        self.high_threshold_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_high_threshold")
+        pass
+
+    def define_gabor_experiment_widgets(self):
+        """Defines Gabor Experiment widgets, these are read from the main_ui.ui file"""
+        # Gabor Experiment
+        # Horizontal Sliders
+        self.kernel_size_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_kernel_size"
+        )
+        # Comboboxes
+        self.kernel_type_combobox = self.findChild(
+            QComboBox, "comboBox_kernel_type"
+        )
+        for item in GaborFilterExperiment().config["kernel_types_dict"]:
+            self.kernel_type_combobox.addItem(item)
+
+        self.gabor_mode_combobox = self.findChild(
+            QComboBox, "comboBox_gabor_mode")
+
+        for item in GaborFilterExperiment().config["gabor_mode_dict"]:
+            self.gabor_mode_combobox.addItem(item)
+
+        # DoubleSpinbox
+        self.sigma_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_sigma")
+        self.lambda_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_lambda")
+        self.gamma_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_gamma")
+        self.psi_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_psi")
+
+        # LCD Numbers
+        self.kernel_size_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_kernel_size")
+
+        pass
+
+    def define_general_pushbutton_widgets(self):
         # Push Buttons
         self.load_source_image_button = self.findChild(
             QPushButton, "pushButton_load_input_image"
@@ -210,18 +337,13 @@ class UI(QMainWindow):
 
         self.save_image_button = self.findChild(
             QPushButton, "pushButton_save_image")
-        self.reset_output_image_button = self.findChild(
-            QPushButton, "pushButton_reset_output"
-        )
 
-    def define_radiobutton_widgets(self):
+    def define_general_radiobutton_widgets(self):
         # Radio Buttons
         self.continuous_processing_radiobutton = self.findChild(
             QRadioButton, "radioButton_continuous"
         )
-        self.clip_images_radio_button = self.findChild(
-            QRadioButton, "radioButton_clip_images"
-        )
+
         self.compute_on_original_radio_button = self.findChild(
             QRadioButton, "radioButton_compute_on_original"
         )
@@ -238,195 +360,92 @@ class UI(QMainWindow):
         self.output_image_label.setMaximumSize(
             self.max_img_width, self.max_img_height)
 
-    def define_slider_widgets(self):
-        # Horizontal sliders
-        self.webcam_delay_horizontal_slider = self.findChild(
-            QSlider, "horizontalSlider_webcam_delay"
-        )
-
-        self.kernel_size_horizontal_slider = self.findChild(
-            QSlider, "horizontalSlider_kernel_size"
-        )
-
-        # Vertical sliders
-        self.low_threshold_vertical_slider = self.findChild(
-            QSlider, "verticalSlider_low_threshold"
-        )
-        self.mid_threshold_vertical_slider = self.findChild(
-            QSlider, "verticalSlider_mid_threshold"
-        )
-        self.high_threshold_vertical_slider = self.findChild(
-            QSlider, "verticalSlider_high_threshold"
-        )
-
-    def define_combobox_widgets(self):
-        # ComboBoxes
-        # Output start image
-        self.output_start_image_combobox = self.findChild(
-            QComboBox, "comboBox_output_start_image"
-        )
-        for item in GradientExperiment().output_start_mode_dict:
-            self.output_start_image_combobox.addItem(item)
-        # Proccessing Modes
-        self.multiplier_mode_combobox = self.findChild(
-            QComboBox, "comboBox_multiplier_mode"
-        )
-        for item in GradientExperiment().dynamic_multpiplier_functions_dict:
-            self.multiplier_mode_combobox.addItem(item)
-
-        self.merge_mode_combobox = self.findChild(
-            QComboBox, "comboBox_merge_mode")
-        for item in GradientExperiment().merge_mode_functions_dict:
-            self.merge_mode_combobox.addItem(item)
-
-        self.video_merge_mode_combobox = self.findChild(
-            QComboBox, "comboBox_video_merge_mode"
-        )
-        for item in GradientExperiment().video_merge_mode_functions_dict:
-            self.video_merge_mode_combobox.addItem(item)
-
-        self.kernel_type_combobox = self.findChild(
-            QComboBox, "comboBox_kernel_type"
-        )
-        for item in GaborFilterExperiment().config["kernel_types_dict"]:
-            self.kernel_type_combobox.addItem(item)
-
-        self.gabor_mode_combobox = self.findChild(
-            QComboBox, "comboBox_gabor_mode")
-
-        for item in GaborFilterExperiment().config["gabor_mode_dict"]:
-            self.gabor_mode_combobox.addItem(item)
-
-    def define_spinbox_widgets(self):
-        # Spinboxes
-        self.multiplier_amplitude_spinbox = self.findChild(
-            QSpinBox, "spinBox_multiplier_amplitude"
-        )
-        self.multiplier_frequency_spinbox = self.findChild(
-            QSpinBox, "spinBox_multiplier_frequency"
-        )
-        self.fast_forward_iterations_spinbox = self.findChild(
-            QSpinBox, "spinBox_fast_forward_iterations"
-        )
-        self.alternate_every_n_spinbox = self.findChild(
-            QSpinBox, "spinBox_alternate_every_n"
-        )
-        self.low_shift_spinbox = self.findChild(QSpinBox, "spinBox_low_shift")
-        self.mid_shift_spinbox = self.findChild(QSpinBox, "spinBox_mid_shift")
-        self.high_shift_spinbox = self.findChild(
-            QSpinBox, "spinBox_high_shift")
-
-        # DoubleSpinbox
-        self.sigma_double_spinbox = self.findChild(
-            QDoubleSpinBox, "doubleSpinBox_sigma")
-        self.lambda_double_spinbox = self.findChild(
-            QDoubleSpinBox, "doubleSpinBox_lambda")
-        self.gamma_double_spinbox = self.findChild(
-            QDoubleSpinBox, "doubleSpinBox_gamma")
-        self.psi_double_spinbox = self.findChild(
-            QDoubleSpinBox, "doubleSpinBox_psi")
-
     def define_tabs_widgets(self):
         # Tabs
         self.edit_mode_tab = self.findChild(QTabWidget, "tabWidget_edit_mode")
-        # self.photo_mode_tab=self.findChild(QTabWidget, "tab_photo_mode")
-        # self.video_mode_tab=self.findChild(QTabWidget, "tab_video_mode")
 
         self.gradient_experiment_config_tab = self.findChild(
-            QTabWidget, "tab_gradient_experiment_config"
-        )
+            QTabWidget, "tab_gradient_experiment_config")
+
         self.schnock_original_config_tab = self.findChild(
-            QTabWidget, "tab_schnock_original_config"
-        )
+            QTabWidget, "tab_schnock_original_config")
 
         self.gabor_experiment_config_tab = self.findChild(
-            QTabWidget, "tab_gabor_filter_experiment_config"
-        )
-
-    def define_lcd_number_widgets(self):
-        # LCD Numbers
-        self.webcam_delay_lcd_number = self.findChild(
-            QLCDNumber, "lcdNumber_webcam_delay"
-        )
-        self.low_threshold_lcd_number = self.findChild(
-            QLCDNumber, "lcdNumber_low_threshold"
-        )
-        self.mid_threshold_lcd_number = self.findChild(
-            QLCDNumber, "lcdNumber_mid_threshold"
-        )
-        self.high_threshold_lcd_number = self.findChild(
-            QLCDNumber, "lcdNumber_high_threshold"
-        )
-
-        self.kernel_size_lcd_number = self.findChild(
-            QLCDNumber, "lcdNumber_kernel_size"
-        )
+            QTabWidget, "tab_gabor_filter_experiment_config")
 
     def connect_buttons(self):
         """Connects the buttons to functions"""
+        self.connect_general_buttons()
+        self.connect_gradient_experiment_buttons()
+        self.connect_schnock_experiment_buttons()
+        self.connect_gabor_experiment_buttons()
+        pass
+
+    def connect_general_buttons(self):
+
+        self.connect_general_pushbuttons()
+        # Spinboxes
+        self.fast_forward_iterations_spinbox.valueChanged.connect(
+            self.set_fast_forward_iterations)
+
+        self.connect_general_radiobuttons()
+
+        # Horizontal Sliders
+        self.webcam_delay_horizontal_slider.valueChanged.connect(
+            self.set_webcam_delay)
+        # Tabs
+        self.edit_mode_tab.currentChanged.connect(self.set_edit_mode)
+
+    def connect_general_pushbuttons(self):
         # Push Buttons
         self.load_source_image_button.clicked.connect(
             self.load_source_image_from_file)
         self.process_image_button.clicked.connect(self.process_image)
         self.process_folder_button.clicked.connect(self.process_folder)
         self.save_image_button.clicked.connect(self.save_as_file)
-        self.reset_output_image_button.clicked.connect(self.reset_output_image)
         self.set_output_as_input_button.clicked.connect(
             self.set_output_as_input)
 
-        # Combo boxes
-        self.merge_mode_combobox.currentTextChanged.connect(
-            self.set_merge_mode)
-        self.video_merge_mode_combobox.currentTextChanged.connect(
-            self.set_video_merge_mode
-        )
-        self.multiplier_mode_combobox.currentTextChanged.connect(
-            self.set_multiplier_mode
-        )
-        self.output_start_image_combobox.currentTextChanged.connect(
-            self.set_output_start_image_mode
-        )
-        self.kernel_type_combobox.currentTextChanged.connect(
-            self.set_kernel_type)
-        self.gabor_mode_combobox.currentTextChanged.connect(
-            self.set_gabor_mode)
-
-        # Spinboxes
-        self.multiplier_amplitude_spinbox.valueChanged.connect(
-            self.set_multiplier_amplitude
-        )
-        self.multiplier_frequency_spinbox.valueChanged.connect(
-            self.set_multiplier_frequency
-        )
-        self.fast_forward_iterations_spinbox.valueChanged.connect(
-            self.set_fast_forward_iterations
-        )
-        self.alternate_every_n_spinbox.valueChanged.connect(
-            self.set_alternate_every_n)
-        self.low_shift_spinbox.valueChanged.connect(self.set_low_shift)
-        self.mid_shift_spinbox.valueChanged.connect(self.set_mid_shift)
-        self.high_shift_spinbox.valueChanged.connect(self.set_high_shift)
-
-        self.sigma_double_spinbox.valueChanged.connect(self.set_kernel_sigma)
-        self.lambda_double_spinbox.valueChanged.connect(self.set_kernel_lambda)
-        self.psi_double_spinbox.valueChanged.connect(self.set_kernel_psi)
-        self.gamma_double_spinbox.valueChanged.connect(self.set_kernel_gamma)
-
-        # Radiobutton
-        self.clip_images_radio_button.toggled.connect(self.set_clip_images)
+    def connect_general_radiobuttons(self):
+        # Radio Buttons
         self.compute_on_original_radio_button.toggled.connect(
-            self.set_compute_on_original
-        )
+            self.set_compute_on_original)
         self.webcam_input_radiobutton.toggled.connect(self.start_video)
         self.continuous_processing_radiobutton.toggled.connect(
             self.process_image)
 
-        # Horizontal Sliders
-        self.webcam_delay_horizontal_slider.valueChanged.connect(
-            self.set_webcam_delay)
-        self.kernel_size_horizontal_slider.valueChanged.connect(
-            self.set_kernel_size
-        )
+    def connect_gradient_experiment_buttons(self):
+        # Combo boxes
+        self.merge_mode_combobox.currentTextChanged.connect(
+            self.set_merge_mode)
+        self.video_merge_mode_combobox.currentTextChanged.connect(
+            self.set_video_merge_mode)
+        self.multiplier_mode_combobox.currentTextChanged.connect(
+            self.set_multiplier_mode)
+        self.output_start_image_combobox.currentTextChanged.connect(
+            self.set_output_start_image_mode)
+
+        # Push Buttons
+        self.reset_output_image_button.clicked.connect(self.reset_output_image)
+
+        # Radiobuttons
+        self.clip_images_radio_button.toggled.connect(self.set_clip_images)
+
+        # Spinboxes
+        self.multiplier_amplitude_spinbox.valueChanged.connect(
+            self.set_multiplier_amplitude)
+        self.multiplier_frequency_spinbox.valueChanged.connect(
+            self.set_multiplier_frequency)
+        self.alternate_every_n_spinbox.valueChanged.connect(
+            self.set_alternate_every_n)
+        pass
+
+    def connect_schnock_experiment_buttons(self):
+        # Spinboxes
+        self.low_shift_spinbox.valueChanged.connect(self.set_low_shift)
+        self.mid_shift_spinbox.valueChanged.connect(self.set_mid_shift)
+        self.high_shift_spinbox.valueChanged.connect(self.set_high_shift)
+
         # Vertical Sliders
         self.low_threshold_vertical_slider.valueChanged.connect(
             self.set_low_threshold)
@@ -435,9 +454,24 @@ class UI(QMainWindow):
         self.high_threshold_vertical_slider.valueChanged.connect(
             self.set_high_threshold
         )
+        pass
 
-        # Tabs
-        self.edit_mode_tab.currentChanged.connect(self.set_edit_mode)
+    def connect_gabor_experiment_buttons(self):
+        # Comboboxes
+        self.kernel_type_combobox.currentTextChanged.connect(
+            self.set_kernel_type)
+        self.gabor_mode_combobox.currentTextChanged.connect(
+            self.set_gabor_mode)
+
+        # DoubleSpinbox
+        self.sigma_double_spinbox.valueChanged.connect(self.set_kernel_sigma)
+        self.lambda_double_spinbox.valueChanged.connect(self.set_kernel_lambda)
+        self.psi_double_spinbox.valueChanged.connect(self.set_kernel_psi)
+        self.gamma_double_spinbox.valueChanged.connect(self.set_kernel_gamma)
+
+        self.kernel_size_horizontal_slider.valueChanged.connect(
+            self.set_kernel_size
+        )
         pass
 
     @pyqtSlot(np.ndarray)
