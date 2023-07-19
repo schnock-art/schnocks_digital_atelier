@@ -597,6 +597,19 @@
      <string>Export Image</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_set_output_as_input">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>730</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Set Output as Input</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
