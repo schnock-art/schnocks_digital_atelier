@@ -174,6 +174,10 @@ class UI(QMainWindow):
         self.previous_image_button = self.findChild(
             QPushButton, "pushButton_previous_image"
         )
+        self.set_output_as_input_button = self.findChild(
+            QPushButton, "pushButton_set_output_as_input"
+        )
+        
         self.save_image_button = self.findChild(
             QPushButton, "pushButton_save_image")
         self.reset_output_image_button = self.findChild(
@@ -295,6 +299,7 @@ class UI(QMainWindow):
         self.process_folder_button.clicked.connect(self.process_folder)
         self.save_image_button.clicked.connect(self.save_as_file)
         self.reset_output_image_button.clicked.connect(self.reset_output_image)
+        self.set_output_as_input_button.clicked.connect(self.set_output_as_input)
 
         # Combo boxes
         self.merge_mode_combobox.currentTextChanged.connect(
@@ -699,6 +704,12 @@ class UI(QMainWindow):
             self.output_image_label.setPixmap(
                 self.pixmap_from_cv_image(result_image_resized)
             )
+    
+    def set_output_as_input(self):
+        """Sets output image as input image for GradientExperiment"""
+        self.source_original_image_data = self.result_image_data
+        self.set_source_image_data()
+        self.reset_output_image()
 
 # %%
 
