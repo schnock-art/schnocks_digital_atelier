@@ -40,7 +40,7 @@ def editar_pixel(
         # Darker pixels
         pixel[arg_max] += mid_shift
         # pixel[arg_mid] += mid_shift
-        pixel[arg_min] = max(0, pixel[arg_min]-low_shift)
+        pixel[arg_min] = max(0, pixel[arg_min] - low_shift)
     elif min_value > high_threshold:
         # Brighter pixels
         pixel[arg_min] = min(255, pixel[arg_min] + high_shift)
