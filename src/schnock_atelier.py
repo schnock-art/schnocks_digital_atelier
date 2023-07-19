@@ -2,11 +2,14 @@
 """
 # %%
 # standard imports
-import cv2
-import numpy as np
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
-from PyQt6.QtGui import QPixmap, QImage
-from PyQt6 import uic
+from experiment_classes.original_schnock import SchnockExperiment
+from experiment_classes.gradient_experiment import GradientExperiment
+from experiment_classes.gabor_filter_experiment import GaborFilterExperiment
+import sys
+import time
+import logging
+import os
+
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -18,21 +21,17 @@ from PyQt6.QtWidgets import (
     QSlider,
     QComboBox,
     QSpinBox,
+    QDoubleSpinBox,
     QTabWidget,
     QLCDNumber,
-    QInputDialog,
+    QInputDialog
 )
-from experiment_classes.original_schnock import SchnockExperiment
-from experiment_classes.gradient_experiment import GradientExperiment
-import sys
-import time
-import logging
-import os
-import json
-import requests
 
-r = requests.get("http://github.com/", allow_redirects=False)
-
+from PyQt6 import uic
+from PyQt6.QtGui import QPixmap, QImage
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QThread, QCoreApplication
+import numpy as np
+import cv2
 
 translate = QCoreApplication.translate
 
@@ -111,6 +110,8 @@ class UI(QMainWindow):
             self.init_schnock_experiment()
         elif self.config["edit_mode"] == "gradient_experiment":
             self.init_gradient_experiment()
+        elif self.config["edit_mode"] == "gabor_filter_experiment":
+            self.init_gabor_filter_experiment()
         else:
             raise Exception("No edit mode specified!")
 
@@ -157,9 +158,37 @@ class UI(QMainWindow):
             self.set_source_image_data()
         self.init_common_values()
 
+    def init_gabor_filter_experiment(self):
+        self.experiment = GaborFilterExperiment()
+        self.config = {}
+        self.config["edit_mode"] = "gabor_filter_experiment"
+        self.set_kernel_size()
+        self.set_kernel_type()
+        self.set_kernel_gamma()
+        self.set_kernel_lambda()
+        self.set_kernel_psi()
+        self.set_kernel_sigma()
+        self.set_gabor_mode()
+        self.config[
+            "compute_on_original"
+        ] = self.compute_on_original_radio_button.isChecked()
+        if self.source_original_image_data is not None:
+            self.set_source_image_data()
+        self.init_common_values()
+
     def define_widgets(self):
         """Defines widgets as class attributes, these are read from the main_ui.ui file"""
         logging.debug("Defining Widgets")
+        self.define_pushbutton_widgets()
+        self.define_radiobutton_widgets()
+        self.define_image_widgets()
+        self.define_slider_widgets()
+        self.define_combobox_widgets()
+        self.define_spinbox_widgets()
+        self.define_tabs_widgets()
+        self.define_lcd_number_widgets()
+
+    def define_pushbutton_widgets(self):
         # Push Buttons
         self.load_source_image_button = self.findChild(
             QPushButton, "pushButton_load_input_image"
@@ -185,6 +214,7 @@ class UI(QMainWindow):
             QPushButton, "pushButton_reset_output"
         )
 
+    def define_radiobutton_widgets(self):
         # Radio Buttons
         self.continuous_processing_radiobutton = self.findChild(
             QRadioButton, "radioButton_continuous"
@@ -198,6 +228,8 @@ class UI(QMainWindow):
         self.webcam_input_radiobutton = self.findChild(
             QRadioButton, "radioButton_webcam_input"
         )
+
+    def define_image_widgets(self):
         # Images
         self.input_image_label = self.findChild(QLabel, "Input_Image")
         self.output_image_label = self.findChild(QLabel, "Output_Image")
@@ -206,9 +238,14 @@ class UI(QMainWindow):
         self.output_image_label.setMaximumSize(
             self.max_img_width, self.max_img_height)
 
+    def define_slider_widgets(self):
         # Horizontal sliders
         self.webcam_delay_horizontal_slider = self.findChild(
             QSlider, "horizontalSlider_webcam_delay"
+        )
+
+        self.kernel_size_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_kernel_size"
         )
 
         # Vertical sliders
@@ -222,6 +259,7 @@ class UI(QMainWindow):
             QSlider, "verticalSlider_high_threshold"
         )
 
+    def define_combobox_widgets(self):
         # ComboBoxes
         # Output start image
         self.output_start_image_combobox = self.findChild(
@@ -247,6 +285,19 @@ class UI(QMainWindow):
         for item in GradientExperiment().video_merge_mode_functions_dict:
             self.video_merge_mode_combobox.addItem(item)
 
+        self.kernel_type_combobox = self.findChild(
+            QComboBox, "comboBox_kernel_type"
+        )
+        for item in GaborFilterExperiment().config["kernel_types_dict"]:
+            self.kernel_type_combobox.addItem(item)
+
+        self.gabor_mode_combobox = self.findChild(
+            QComboBox, "comboBox_gabor_mode")
+
+        for item in GaborFilterExperiment().config["gabor_mode_dict"]:
+            self.gabor_mode_combobox.addItem(item)
+
+    def define_spinbox_widgets(self):
         # Spinboxes
         self.multiplier_amplitude_spinbox = self.findChild(
             QSpinBox, "spinBox_multiplier_amplitude"
@@ -265,6 +316,17 @@ class UI(QMainWindow):
         self.high_shift_spinbox = self.findChild(
             QSpinBox, "spinBox_high_shift")
 
+        # DoubleSpinbox
+        self.sigma_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_sigma")
+        self.lambda_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_lambda")
+        self.gamma_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_gamma")
+        self.psi_double_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_psi")
+
+    def define_tabs_widgets(self):
         # Tabs
         self.edit_mode_tab = self.findChild(QTabWidget, "tabWidget_edit_mode")
         # self.photo_mode_tab=self.findChild(QTabWidget, "tab_photo_mode")
@@ -277,6 +339,11 @@ class UI(QMainWindow):
             QTabWidget, "tab_schnock_original_config"
         )
 
+        self.gabor_experiment_config_tab = self.findChild(
+            QTabWidget, "tab_gabor_filter_experiment_config"
+        )
+
+    def define_lcd_number_widgets(self):
         # LCD Numbers
         self.webcam_delay_lcd_number = self.findChild(
             QLCDNumber, "lcdNumber_webcam_delay"
@@ -289,6 +356,10 @@ class UI(QMainWindow):
         )
         self.high_threshold_lcd_number = self.findChild(
             QLCDNumber, "lcdNumber_high_threshold"
+        )
+
+        self.kernel_size_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_kernel_size"
         )
 
     def connect_buttons(self):
@@ -315,6 +386,10 @@ class UI(QMainWindow):
         self.output_start_image_combobox.currentTextChanged.connect(
             self.set_output_start_image_mode
         )
+        self.kernel_type_combobox.currentTextChanged.connect(
+            self.set_kernel_type)
+        self.gabor_mode_combobox.currentTextChanged.connect(
+            self.set_gabor_mode)
 
         # Spinboxes
         self.multiplier_amplitude_spinbox.valueChanged.connect(
@@ -332,6 +407,11 @@ class UI(QMainWindow):
         self.mid_shift_spinbox.valueChanged.connect(self.set_mid_shift)
         self.high_shift_spinbox.valueChanged.connect(self.set_high_shift)
 
+        self.sigma_double_spinbox.valueChanged.connect(self.set_kernel_sigma)
+        self.lambda_double_spinbox.valueChanged.connect(self.set_kernel_lambda)
+        self.psi_double_spinbox.valueChanged.connect(self.set_kernel_psi)
+        self.gamma_double_spinbox.valueChanged.connect(self.set_kernel_gamma)
+
         # Radiobutton
         self.clip_images_radio_button.toggled.connect(self.set_clip_images)
         self.compute_on_original_radio_button.toggled.connect(
@@ -344,6 +424,9 @@ class UI(QMainWindow):
         # Horizontal Sliders
         self.webcam_delay_horizontal_slider.valueChanged.connect(
             self.set_webcam_delay)
+        self.kernel_size_horizontal_slider.valueChanged.connect(
+            self.set_kernel_size
+        )
         # Vertical Sliders
         self.low_threshold_vertical_slider.valueChanged.connect(
             self.set_low_threshold)
@@ -440,7 +523,8 @@ class UI(QMainWindow):
             self.config["edit_mode"] = "schnock_original"
         elif self.current_edit_mode_tab_name == "tab_gradient_experiment_config":
             self.init_gradient_experiment()
-
+        elif self.current_edit_mode_tab_name == "tab_gabor_filter_experiment_config":
+            self.init_gabor_filter_experiment()
         else:
             raise ValueError("Invalid edit mode!")
 
@@ -491,8 +575,7 @@ class UI(QMainWindow):
             error_dialog.exec()
         else:
             output_file_path = QFileDialog.getSaveFileName(
-                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)"
-            )[0]
+                self, "Save File", self.source_filename, "Images (*.png *.xpm *.jpg)")[0]
             self.experiment.set_output_path(output_path=output_file_path)
             self.experiment.save_output_image(save_config=True)
             # filename = os.path.abspath(filename)
@@ -545,48 +628,15 @@ class UI(QMainWindow):
         If continuous_processing_radiobutton is checked, wil lcontinue processing
         """
         image_folder_to_process = os.path.abspath(
-            QFileDialog.getExistingDirectory(
-                self, "Select Directory with images")
-        )
+            QFileDialog.getExistingDirectory(self, "Select Directory with images"))
         self.experiment.set_input_directory(
             input_directory=image_folder_to_process)
         self.select_extension_dialog()
-        # image_outputfolder_to_process=os.path.abspath(QFileDialog.getExistingDirectory(self, "Select Output Directory"))
-        # self.experiment.set_output_directory(output_directory=image_outputfolder_to_process)
         self.experiment.process_folder()
 
-        # self.processing_folder=True
-        # if self.edit_mode=="schnock_experiment":
-        #     self.experiment.pass_source_image(self.source_image_data)
-        # self.experiment.compute_new_matrix()
-        # self.result_image_data = self.experiment.new_matrix
-        # result_image_resized = self.resize_image(self.result_image_data)
-        # self.output_image_label.setPixmap(
-        #     self.pixmap_from_cv_image(result_image_resized)
-        # )
-
-        # if self.edit_mode=="gradient_experiment":
-        # while self.continuous_processing_radiobutton.isChecked() is True:
-        #     iteration_number += 1
-        #     self.experiment.compute_new_matrix()
-        #     self.result_image_data = self.experiment.new_matrix
-
-        #     if iteration_number % self.config["fast_forward_iterations"] == 0:
-        #         result_image_resized = self.resize_image(
-        #             self.result_image_data)
-        #         self.output_image_label.setPixmap(
-        #             self.pixmap_from_cv_image(result_image_resized)
-        #         )
-        #         # gc.collect()
-        #         QApplication.processEvents()
-        #         time.sleep(0)
-
     def select_extension_dialog(self):
-        text, ok = QInputDialog.getText(
-            self,
-            "Select file extension",
-            'Enter image extension (e.g. ".jpg", ".png"):',
-        )
+        text, ok = QInputDialog.getText(self, 'Select file extension',
+                                        'Enter image extension (e.g. ".jpg", ".png"):')
         if ok:
             self.experiment.set_file_extension(str(text).upper())
 
@@ -713,12 +763,51 @@ class UI(QMainWindow):
                 self.pixmap_from_cv_image(result_image_resized)
             )
 
+    # Gabor Experiment Attributes
+    def set_kernel_size(self):
+        """Sets kernel size for gabor filter experiment"""
+        self.config["kernel_size"] = self.kernel_size_horizontal_slider.value()
+        self.kernel_size_lcd_number.display(self.config["kernel_size"])
+        self.experiment.set_kernel_size(
+            new_kernel_size=self.config["kernel_size"])
+
+    def set_kernel_type(self):
+        """Sets kernel type for gabor filter experiment"""
+        self.config["kernel_type"] = self.kernel_type_combobox.currentText()
+        self.experiment.set_kernel_type(
+            new_kernel_type=self.config["kernel_type"])
+
+    def set_kernel_sigma(self):
+        """Sets kernel sigma for gabor filter experiment"""
+        self.config["sigma"] = self.sigma_double_spinbox.value()
+        self.experiment.set_sigma(new_sigma=self.config["sigma"])
+
+    def set_kernel_lambda(self):
+        """Sets kernel lambda for gabor filter experiment"""
+        self.config["lambda"] = self.lambda_double_spinbox.value()
+        self.experiment.set_lambda(new_lambda=self.config["lambda"])
+
+    def set_kernel_gamma(self):
+        """Sets kernel gamma for gabor filter experiment"""
+        self.config["gamma"] = self.gamma_double_spinbox.value()
+        self.experiment.set_gamma(new_gamma=self.config["gamma"])
+
+    def set_kernel_psi(self):
+        """Sets kernel psi for gabor filter experiment"""
+        self.config["psi"] = self.psi_double_spinbox.value()
+        self.experiment.set_psi(new_psi=self.config["psi"])
+
+    def set_gabor_mode(self):
+        """Sets gabor mode for gabor filter experiment"""
+        self.config["gabor_mode"] = self.gabor_mode_combobox.currentText()
+        self.experiment.set_gabor_mode(
+            new_gabor_mode=self.config["gabor_mode"])
+
     def set_output_as_input(self):
         """Sets output image as input image for Experiment"""
         self.source_original_image_data = self.result_image_data
         self.set_source_image_data()
         self.reset_output_image()
-
 
 # %%
 
