@@ -9,7 +9,8 @@ import time
 import logging
 import os
 import json
-
+import requests
+r = requests.get('http://github.com/', allow_redirects=False)
 
 from PyQt6.QtWidgets import (
     QApplication,
@@ -706,7 +707,7 @@ class UI(QMainWindow):
             )
     
     def set_output_as_input(self):
-        """Sets output image as input image for GradientExperiment"""
+        """Sets output image as input image for Experiment"""
         self.source_original_image_data = self.result_image_data
         self.set_source_image_data()
         self.reset_output_image()
