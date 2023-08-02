@@ -5,6 +5,7 @@
 from experiment_classes.original_schnock import SchnockExperiment
 from experiment_classes.gradient_experiment import GradientExperiment
 from experiment_classes.gabor_filter_experiment import GaborFilterExperiment
+from experiment_classes.kmeans_experiment import KmeansExperiment
 import sys
 import time
 import logging
@@ -94,8 +95,8 @@ class UI(QMainWindow):
             self.current_edit_mode_tab_name = None
             self.config = {}
             self.define_widgets()
-            self.connect_buttons()
             self.init_values()
+            self.connect_buttons()
             self.show()
 
         except Exception as error:
@@ -112,6 +113,8 @@ class UI(QMainWindow):
             self.init_gradient_experiment()
         elif self.config["edit_mode"] == "gabor_filter_experiment":
             self.init_gabor_filter_experiment()
+        elif self.config["edit_mode"] == "kmeans_experiment":
+            self.init_kmeans_experiment()
         else:
             raise Exception("No edit mode specified!")
 
@@ -176,6 +179,23 @@ class UI(QMainWindow):
             self.set_source_image_data()
         self.init_common_values()
 
+    def init_kmeans_experiment(self):
+        self.experiment = KmeansExperiment()
+        self.config = {}
+        self.config["edit_mode"] = "kmeans_experiment"
+        self.set_number_of_clusters()
+        self.set_number_of_iterations()
+        self.set_number_of_repetitions()
+        self.set_number_of_pyramids()
+        self.set_scaling_factor()
+        self.set_kmeans_init_type()
+        self.config[
+            "compute_on_original"
+        ] = self.compute_on_original_radio_button.isChecked()
+        if self.source_original_image_data is not None:
+            self.set_source_image_data()
+        self.init_common_values()
+
     def define_widgets(self):
         """Defines widgets as class attributes, these are read from the main_ui.ui file"""
         logging.debug("Defining Widgets")
@@ -183,6 +203,7 @@ class UI(QMainWindow):
         self.define_gradient_experiment_widgets()
         self.define_schnock_experiment_widgets()
         self.define_gabor_experiment_widgets()
+        self.define_kmeans_experiment_widgets()
 
     def define_general_widgets(self):
         """Defines general widgets, these are read from the main_ui.ui file"""
@@ -315,6 +336,45 @@ class UI(QMainWindow):
 
         pass
 
+    def define_kmeans_experiment_widgets(self):
+        # Kmeans Experiment widgets
+        # Horizontal Sliders
+        self.number_of_clusters_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_number_of_clusters")
+
+        self.number_of_iterations_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_number_of_iterations")
+
+        self.number_of_repetitions_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_number_of_repetitions")
+
+        self.number_of_pyramids_horizontal_slider = self.findChild(
+            QSlider, "horizontalSlider_number_of_pyramids")
+
+        # Spinboxes
+        self.scaling_factor_spinbox = self.findChild(
+            QDoubleSpinBox, "doubleSpinBox_scaling_factor")
+
+        # Comboboxes
+        self.kmeans_init_types_combobox = self.findChild(
+            QComboBox, "comboBox_kmeans_init_types")
+
+        for item in KmeansExperiment().config["init_types"]:
+            self.kmeans_init_types_combobox.addItem(item)
+
+        # lcd numbers
+        self.number_of_clusters_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_number_of_clusters")
+
+        self.number_of_iterations_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_number_of_iterations")
+
+        self.number_of_repetitions_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_number_of_repetitions")
+
+        self.number_of_pyramids_lcd_number = self.findChild(
+            QLCDNumber, "lcdNumber_number_of_pyramids")
+
     def define_general_pushbutton_widgets(self):
         # Push Buttons
         self.load_source_image_button = self.findChild(
@@ -379,6 +439,7 @@ class UI(QMainWindow):
         self.connect_gradient_experiment_buttons()
         self.connect_schnock_experiment_buttons()
         self.connect_gabor_experiment_buttons()
+        self.connect_kmeans_experiment_buttons()
         pass
 
     def connect_general_buttons(self):
@@ -474,6 +535,27 @@ class UI(QMainWindow):
         )
         pass
 
+    def connect_kmeans_experiment_buttons(self):
+        # Horizontal Sliders
+        self.number_of_clusters_horizontal_slider.valueChanged.connect(
+            self.set_number_of_clusters)
+        self.number_of_iterations_horizontal_slider.valueChanged.connect(
+            self.set_number_of_iterations)
+        self.number_of_repetitions_horizontal_slider.valueChanged.connect(
+            self.set_number_of_repetitions)
+        self.number_of_pyramids_horizontal_slider.valueChanged.connect(
+            self.set_number_of_pyramids)
+
+        # Spinboxes
+        self.scaling_factor_spinbox.valueChanged.connect(
+            self.set_scaling_factor)
+
+        # Comboboxes
+        self.kmeans_init_types_combobox.currentTextChanged.connect(
+            self.set_kmeans_init_type)
+
+        pass
+
     @pyqtSlot(np.ndarray)
     def set_source_image_data(self):
         """Sets the source image to appropiate widget"""
@@ -559,6 +641,8 @@ class UI(QMainWindow):
             self.init_gradient_experiment()
         elif self.current_edit_mode_tab_name == "tab_gabor_filter_experiment_config":
             self.init_gabor_filter_experiment()
+        elif self.current_edit_mode_tab_name == "tab_kmeans_experiment_config":
+            self.init_kmeans_experiment()
         else:
             raise ValueError("Invalid edit mode!")
 
@@ -842,6 +926,46 @@ class UI(QMainWindow):
         self.source_original_image_data = self.result_image_data
         self.set_source_image_data()
         self.reset_output_image()
+
+    # Kmeans Experiment Attributes
+    def set_number_of_clusters(self):
+        self.config["number_of_clusters"] = self.number_of_clusters_horizontal_slider.value()
+        self.number_of_clusters_lcd_number.display(
+            self.config["number_of_clusters"])
+        self.experiment.set_number_of_clusters(
+            new_number_of_clusters=self.config["number_of_clusters"])
+
+    def set_number_of_iterations(self):
+        self.config["number_of_iterations"] = self.number_of_iterations_horizontal_slider.value()
+        self.number_of_iterations_lcd_number.display(
+            self.config["number_of_iterations"])
+        self.experiment.set_number_of_iterations(
+            new_number_of_iterations=self.config["number_of_iterations"])
+
+    def set_number_of_repetitions(self):
+        self.config["number_of_repetitions"] = self.number_of_repetitions_horizontal_slider.value()
+        self.number_of_repetitions_lcd_number.display(
+            self.config["number_of_repetitions"])
+        self.experiment.set_number_of_repetitions(
+            new_number_of_repetitions=self.config["number_of_repetitions"])
+
+    def set_number_of_pyramids(self):
+        self.config["number_of_pyramids"] = self.number_of_pyramids_horizontal_slider.value()
+        self.number_of_pyramids_lcd_number.display(
+            self.config["number_of_pyramids"])
+        self.experiment.set_number_of_pyramids(
+            new_number_of_pyramids=self.config["number_of_pyramids"])
+
+    def set_scaling_factor(self):
+        self.config["scaling_factor"] = self.scaling_factor_spinbox.value()
+        self.experiment.set_scaling_factor(
+            new_scaling_factor=self.config["scaling_factor"])
+
+    def set_kmeans_init_type(self):
+        self.config["kmeans_init_type"] = self.kmeans_init_types_combobox.currentText()
+        self.experiment.set_kmeans_init_type(
+            new_init_type=self.config["kmeans_init_type"])
+
 
 # %%
 
