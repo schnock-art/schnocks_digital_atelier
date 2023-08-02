@@ -142,6 +142,7 @@ dependencies:
   - tenacity==8.2.2
   - threadpoolctl==3.2.0
   - tifffile==2023.4.12
+  - tqdm==4.65.0
   - trove-classifiers==2023.4.29
   - tzdata==2023.3
   - urllib3==1.26.15
