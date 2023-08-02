@@ -63,6 +63,12 @@ class BaseExperiment:
         self.source_image = source_image
         if self.__class__.__name__ == "GradientExperiment":
             self.get_difference_matrices()
+        if self.__class__.__name__ == "KmeansExperiment":
+            self.create_new_array_with_coordinates()
+            self.scale_down_image()
+            self.flatten_image()
+            self.create_training_data()
+            self.create_prediction_data()
 
     def compute_new_matrix(self):
         """Placeholder metzhod to create new computed matrix"""
@@ -145,9 +151,10 @@ class BaseExperiment:
         self.load_source_image(source_image_path=path)
         self.process_source_image()
         self.alternate_channels()
-        self.histogram_matching()
+        if self.__class__.__name__ == "SchnockExperiment":
+            self.histogram_matching()
         self.set_output_path(output_path=output_path)
-        self.save_output_images(save_config=save_config)
+        self.save_output_image(save_config=save_config)
 
     def histogram_matching(self):
         self.histogram_images = [
@@ -184,6 +191,14 @@ class BaseExperiment:
             )
         else:
             self.output_image_path = self.source_image_path
+
+    def save_output_image(self, save_config: bool = False):
+        self.output_image_path_wo_extension = os.path.splitext(self.output_image_path)[
+            0
+        ]
+        cv2.imwrite(self.output_image_path, self.new_matrix)
+        if save_config:
+            self.save_config_json()
 
     def save_output_images(self, save_config: bool = False):
         os.makedirs(os.path.dirname(self.output_image_path), exist_ok=True)
@@ -223,8 +238,11 @@ class BaseExperiment:
                 self.output_directory, "experiment_config.json"
             )
         else:
-            filename_wo_ext = os.path.splitext(self.source_image_path)[0]
-            self.config_path = "{0}_config.json".format(filename_wo_ext)
+            # filename_wo_ext = os.path.splitext(self.source_image_path)[0]
+            self.config_path = "{0}_config.json".format(
+                self.output_image_path_wo_extension)
+
+        self.config["kmeans_model"] = None
         with open(self.config_path, "w") as outfile:
             json.dump(self.config, outfile, indent=4, cls=NpEncoder)
 
