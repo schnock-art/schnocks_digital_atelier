@@ -1,7 +1,7 @@
 
 save-env:
 	conda env export > environment.yml
-	pip3 freeze > requirements.txt
+	pip list --format=freeze > requirements.txt
 
 create-env:
 	conda env create -n schnock --file environment.yml
