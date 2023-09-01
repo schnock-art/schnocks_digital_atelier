@@ -19,6 +19,7 @@ class GaborFilterExperiment(BaseExperiment):
         self.config["kernel_type"] = "CV_32F"
         self.config["mode"] = 1
         self.config["thread_nr"] = 8
+        self.config["gabor_mode"] = 1
         self.set_ktypes_dict()
         self.set_gabor_mode_dict()
         self.build_filters()

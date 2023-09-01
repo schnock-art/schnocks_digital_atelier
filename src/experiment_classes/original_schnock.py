@@ -187,8 +187,8 @@ class SchnockExperiment(BaseExperiment):
 
 
 # %%
-# if __name__ == "__main__":
-#     experiment = SchnockExperiment()
-#     #experiment.load_source_image(source_image_path=r"..\data\DSC03351.JPG")
-#     experiment.process_path(path=r"..\data\DSC03351.JPG")
+if __name__ == "__main__":
+    experiment = SchnockExperiment()
+    # experiment.load_source_image(source_image_path=r"..\data\DSC03351.JPG")
+    experiment.process_path(path=r"..\data\DSC03351.JPG")
 # %%

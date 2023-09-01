@@ -16,7 +16,7 @@ class KmeansExperiment(BaseExperiment):
         self.config = {}
         self.config["scaling_factor"] = 5
         self.config["number_of_pyramids"] = 3
-        self.config["number_of_clusters"] = 50
+        self.config["number_of_clusters"] = 200
         self.config["number_of_iterations"] = 10
         self.config["number_of_repetitions"] = 5
         self.config["init_types"] = [

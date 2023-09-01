@@ -32,13 +32,14 @@ class GradientExperiment(BaseExperiment):
         self.config["alternate_counter"] = 0
         self.config["multiplier_amplitude"] = 1
         self.config["multiplier_frequency"] = 4
+        self.config["fast_forward_iterations"] = 23
         self.config["grade"] = 1
         self.config["clip_images"] = False
-        self.config["alternate_every_n"] = 0
-        self.config["dynamic_multipler"] = None
-        self.config["multiplier_mode"] = None
-        self.config["video_merge_mode"] = None
-        self.config["merge_mode"] = None
+        self.config["alternate_every_n"] = 4
+        self.config["dynamic_multipler"] = 1
+        self.config["multiplier_mode"] = "constant"
+        self.config["video_merge_mode"] = "alternate"
+        self.config["merge_mode"] = "alternate"
         self.initialize_dynamic_multiplier_dict()
         self.initialize_merge_mode_dict()
         self.initialize_video_merge_mode_dict()
