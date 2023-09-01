@@ -6,6 +6,7 @@ import numpy as np
 import logging
 import json
 from skimage.exposure import match_histograms
+from tqdm import tqdm
 
 from .utils import NpEncoder
 
@@ -90,7 +91,7 @@ class BaseExperiment:
 
     def create_output_directory(self):
         try:
-            os.makedirs(self.output_directory)
+            os.makedirs(self.output_directory, exist_ok=True)
         except FileExistsError:
             logging.error("Output directory already exists!")
             raise
@@ -112,6 +113,7 @@ class BaseExperiment:
         input_directory: str = None,
         output_directory: str = None,
         file_extension: str = None,
+        save_all_variants: bool = False,
     ):
         if input_directory is not None:
             self.set_input_directory(input_directory=input_directory)
@@ -130,8 +132,8 @@ class BaseExperiment:
         self.save_config_json(folder=True)
         self.total_progess = len(self.input_diretory_files_list)
 
-        for path in self.input_diretory_files_list:
-            self.process_path(path=path)
+        for path in tqdm(self.input_diretory_files_list):
+            self.process_path(path=path, save_all_variants=save_all_variants)
         # Parallel(n_jobs=num_cores)(delayed(self.process_path)(path=i) for i in self.input_diretory_files_list)
         # end_time=datetime.now()
         # print("Total time: {0}".format(end_time-start_time))
@@ -146,7 +148,10 @@ class BaseExperiment:
                     )
 
     def process_path(
-        self, path: str, output_path: str = None, save_config: bool = False
+        self, path: str,
+        output_path: str = None,
+        save_config: bool = False,
+        save_all_variants: bool = False,
     ):
         self.load_source_image(source_image_path=path)
         self.process_source_image()
@@ -154,7 +159,11 @@ class BaseExperiment:
         if self.__class__.__name__ == "SchnockExperiment":
             self.histogram_matching()
         self.set_output_path(output_path=output_path)
-        self.save_output_image(save_config=save_config)
+
+        if save_all_variants:
+            self.save_output_images(save_config=save_config)
+        else:
+            self.save_output_image(save_config=save_config)
 
     def histogram_matching(self):
         self.histogram_images = [
@@ -193,12 +202,16 @@ class BaseExperiment:
             self.output_image_path = self.source_image_path
 
     def save_output_image(self, save_config: bool = False):
-        self.output_image_path_wo_extension = os.path.splitext(self.output_image_path)[
-            0
-        ]
-        cv2.imwrite(self.output_image_path, self.new_matrix)
-        if save_config:
-            self.save_config_json()
+        try:
+            self.output_image_path_wo_extension = os.path.splitext(self.output_image_path)[
+                0
+            ]
+            os.makedirs(os.path.dirname(self.output_image_path), exist_ok=True)
+            cv2.imwrite(self.output_image_path, self.new_matrix)
+            if save_config:
+                self.save_config_json()
+        except Exception as error:
+            raise error
 
     def save_output_images(self, save_config: bool = False):
         os.makedirs(os.path.dirname(self.output_image_path), exist_ok=True)
@@ -248,6 +261,7 @@ class BaseExperiment:
 
     def process_source_image(self):
         """placeholder for subclasses"""
+        self.compute_new_matrix()
         pass
 
     def set_fast_forward_iterations(self, new_value):

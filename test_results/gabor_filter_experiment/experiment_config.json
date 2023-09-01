@@ -1,0 +1,20 @@
+{
+    "kernel_size": 51,
+    "sigma": 4.0,
+    "lambda": 10.0,
+    "gamma": 0.5,
+    "psi": 0.5,
+    "kernel_type": "CV_32F",
+    "mode": 1,
+    "thread_nr": 8,
+    "gabor_mode": 1,
+    "kernel_types_dict": {
+        "CV_32F": 5,
+        "CV_64F": 6
+    },
+    "gabor_mode_dict": {
+        "1": 1,
+        "-1": -1
+    },
+    "kmeans_model": null
+}

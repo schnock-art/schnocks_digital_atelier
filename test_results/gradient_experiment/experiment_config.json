@@ -1,0 +1,16 @@
+{
+    "current_iteration_n": 10,
+    "alternate_counter": 2,
+    "multiplier_amplitude": 1,
+    "multiplier_frequency": 4,
+    "fast_forward_iterations": 10,
+    "grade": 1,
+    "clip_images": false,
+    "alternate_every_n": 4,
+    "dynamic_multipler": 1,
+    "multiplier_mode": "constant",
+    "video_merge_mode": "alternate",
+    "merge_mode": "alternate",
+    "dynamic_multiplier": 1,
+    "kmeans_model": null
+}
