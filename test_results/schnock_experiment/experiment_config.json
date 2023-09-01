@@ -1,0 +1,9 @@
+{
+    "high_shift": 10,
+    "mid_shift": 0,
+    "low_shift": 10,
+    "high_threshold": 220,
+    "mid_threshold": 150,
+    "low_threshold": 50,
+    "kmeans_model": null
+}
