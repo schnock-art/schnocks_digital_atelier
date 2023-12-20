@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>Schnocks Digital Atelier</class>
+ <widget class="QMainWindow" name="Schnocks Digital Atelier">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Schnocks Digital Atelier</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="Input_Image">
@@ -1123,7 +1123,7 @@
    </property>
    <widget class="QMenu" name="menuMain">
     <property name="title">
-     <string>Main</string>
+     <string/>
     </property>
     <addaction name="actionLoad_Image"/>
     <addaction name="actionExport_Image"/>
@@ -1154,6 +1154,11 @@
   <action name="actionExport_Image">
    <property name="text">
     <string>Export Image</string>
+   </property>
+  </action>
+  <action name="actionLoad_Image_2">
+   <property name="text">
+    <string>Load Image</string>
    </property>
   </action>
  </widget>
