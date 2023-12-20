@@ -187,6 +187,6 @@ class KmeansExperiment(BaseExperiment):
 if __name__ == "__main__":
     experiment = KmeansExperiment()
     experiment.process_path(
-        path=r"C:\Users\jange\Python Scripts\schnocks_digital_atelier\data\DSC03572.JPG",
-        output_path=r"C:\Users\jange\Python Scripts\schnocks_digital_atelier\data\DSC03572_kmeans.JPG",
+        path=r"data\DSC03572.JPG",
+        output_path=r"data\DSC03572_kmeans.JPG",
     )

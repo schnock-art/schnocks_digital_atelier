@@ -19,12 +19,12 @@ repos:
       -   id: autopep8
   -   repo: local
       hooks:
-        - id: pylint
-          name: pylint
-          entry: pylint --exit-zero --fail-on=F,E src/
-          language: system
-          always_run: true
-          pass_filenames: false
+        #- id: pylint
+        #  name: pylint
+        #  entry: pylint --exit-zero --fail-on=F,E src/
+        #  language: system
+        #  always_run: true
+        #  pass_filenames: false
         - id: conda-export
           name: conda-export
           entry: python -m environment

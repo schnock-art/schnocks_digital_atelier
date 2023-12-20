@@ -1,0 +1,14 @@
+{
+    "scaling_factor": 1.0,
+    "number_of_pyramids": 0,
+    "number_of_clusters": 51,
+    "number_of_iterations": 10,
+    "number_of_repetitions": 5,
+    "init_types": [
+        "random",
+        "k-means++"
+    ],
+    "init_type": "random",
+    "fast_forward_iterations": 1,
+    "kmeans_model": null
+}
