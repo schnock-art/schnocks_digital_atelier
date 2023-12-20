@@ -49,10 +49,10 @@ def editar_pixel(
     else:
         # Main  illuminated area
         # pixel[arg_max] = min(255, pixel[arg_max] + high_shift)
-        pixel[arg_max] = 255
+        pixel[arg_max] = 255 - mid_shift
         # pixel[arg_mid] += mid_shift
         # pixel[arg_min] = max(0, pixel[arg_min] - low_shift)
-        pixel[arg_min] = 0
+        pixel[arg_min] = 0 + mid_shift
 
 
 @njit(parallel=False, cache=True, nogil=True, fastmath=False)
