@@ -13,22 +13,22 @@ When using the webcam, some configurations can produce rapidly changing and flas
 
 The primary functionality revolves around manipulating images through the computation of gradients and merging different images based on these gradients.
 
-![Alt text](readme_images/gradient_gui.png?raw=true "Title")
+![Alt text](https://github.com/schnock-art/schnocks_digital_atelier/tree/main/readme_images/gradient_gui.png?raw=true "Title")
 
 ### Gabor Filter Experiment
 The primary functionality revolves around applying Gabor Filters with different parameters.
 
-![Alt text](readme_images/gabor_filter_gui.png?raw=true "Title")
+![Alt text](https://github.com/schnock-art/schnocks_digital_atelier/tree/main/readme_images/gabor_filter_gui.png?raw=true "Title")
 
 ### KMeans Experiment
 The primary functionality revolves around applying KMeans to the original image and assigning each pixel to a cluster. The cluster centers are then used to create a new image. This creates the effect of the original image being drawn with a limited number of colors.
 
-![Alt text](readme_images/kmeans_gui.png?raw=true "Title")
+![Alt text](https://github.com/schnock-art/schnocks_digital_atelier/tree/main/readme_images/kmeans_gui.png?raw=true "Title")
 
 ### Schnock Experiment
 The primary functionality revolves around applying a function to each pixel, which is based returns a new pixel where value of the dominant channel is increased. This gives the effect of more saturated colors.
 
-![Alt text](readme_images/schnock_original_gui.png?raw=true "Title")
+![Alt text](https://github.com/schnock-art/schnocks_digital_atelier/tree/main/readme_images/schnock_original_gui.png?raw=true "Title")
 
 ## Create Environment
 #### In terminal
